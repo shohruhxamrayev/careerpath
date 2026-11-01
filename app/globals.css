@@ -1,0 +1,47 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  html { -webkit-text-size-adjust: 100%; scroll-behavior: smooth; }
+  body {
+    @apply bg-paper text-ink font-sans antialiased;
+    font-feature-settings: "cv11", "ss01", "ss03";
+    text-rendering: optimizeLegibility;
+  }
+  ::selection { @apply bg-brand-100 text-brand-900; }
+  :focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-paper; }
+  h1, h2, h3, h4 { @apply text-ink; letter-spacing: -0.012em; }
+  @media (prefers-reduced-motion: reduce) {
+    *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
+  }
+}
+
+@layer components {
+  .display { @apply font-serif font-normal tracking-[-0.02em]; }
+  .eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.12em] text-ink-3; }
+  .card { @apply rounded-md border border-line bg-surface shadow-card; }
+  .card-hover { @apply transition-[border-color,box-shadow,transform] duration-150 hover:border-line-strong hover:shadow-lift; }
+  .input {
+    @apply block w-full rounded border border-line-strong bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-ink-4
+      transition-colors focus:border-brand-500 focus:outline-none focus:ring-2 focus:ring-brand-100 disabled:bg-paper disabled:text-ink-4;
+  }
+  .label { @apply mb-1.5 block text-[13px] font-medium text-ink-2; }
+  .hint { @apply mt-1 text-[12px] text-ink-3; }
+  .link { @apply text-brand-600 underline decoration-brand-200 underline-offset-[3px] hover:decoration-brand-600; }
+  .prose-cp p { @apply mb-3 leading-relaxed text-ink-2; }
+  .prose-cp ul { @apply mb-3 ml-5 list-disc space-y-1 text-ink-2; }
+  .prose-cp ol { @apply mb-3 ml-5 list-decimal space-y-1 text-ink-2; }
+  .prose-cp h3 { @apply mb-2 mt-4 text-[15px] font-semibold; }
+  .prose-cp h4 { @apply mb-1.5 mt-3 text-[14px] font-semibold; }
+  .prose-cp strong { @apply font-semibold text-ink; }
+  .prose-cp a { @apply link; }
+  .skeleton { @apply relative overflow-hidden rounded bg-line/60; }
+  .skeleton::after {
+    content: ""; @apply absolute inset-0 -translate-x-full;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.6), transparent);
+    animation: shimmer 1.4s infinite;
+  }
+  .scrollbar-none { scrollbar-width: none; }
+  .scrollbar-none::-webkit-scrollbar { display: none; }
+}
