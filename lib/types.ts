@@ -21,7 +21,9 @@ export type Region =
   | "Europe"
   | "East Asia"
   | "Southeast Asia"
-  | "Central Asia";
+  | "Central Asia"
+  | "Middle East"
+  | "Oceania";
 
 export type DegreeLevel = "undergraduate" | "masters" | "phd";
 export type StudentLevel = "high-school" | "undergraduate" | "masters" | "phd" | "graduate";
@@ -83,7 +85,9 @@ export interface University {
   notablePrograms: string[];
   languageOfInstruction: string;
   selectivity: Selectivity;
-  qsRank2026?: number;
+  qsRank?: number;
+  /** [latitude, longitude] for the globe */
+  geo?: [number, number];
   tuition: { band: TuitionBand | null; display: string; source: Source };
   aid: { kind: AidForInternational; summary: string; source: Source };
   english: { ielts?: number; toefl?: number; note: string; source: Source };

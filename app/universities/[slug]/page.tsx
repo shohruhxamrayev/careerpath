@@ -55,7 +55,7 @@ export default function UniversityPage({ params }: { params: { slug: string } })
           <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="flex flex-wrap gap-1.5">
-                {u.qsRank2026 && <Badge tone="outline">QS 2026 #{u.qsRank2026}</Badge>}
+                {u.qsRank && <Badge tone="outline">QS 2027 #{u.qsRank}</Badge>}
                 <Badge>{u.type === "public" ? "Public" : "Private"}</Badge>
                 <Badge>{SELECTIVITY_LABELS[u.selectivity]}</Badge>
                 <Badge tone="brand">{AID_LABELS[u.aid.kind]}</Badge>
@@ -90,9 +90,9 @@ export default function UniversityPage({ params }: { params: { slug: string } })
             <dl className="mt-5 grid gap-4 sm:grid-cols-3">
               <Fact label="Degree levels" value={u.levels.map((l) => DEGREE_LEVEL_LABELS[l]).join(", ")} />
               <Fact label="Language of instruction" value={u.languageOfInstruction} />
-              <Fact label="Ranking" value={u.qsRank2026 ? `#${u.qsRank2026} in QS World University Rankings 2026` : "Not in our ranking data"} />
+              <Fact label="Ranking" value={u.qsRank ? `#${u.qsRank} in QS World University Rankings 2027` : "Not in our ranking data"} />
             </dl>
-            {u.qsRank2026 && <SourceNote source={QS_SOURCE} className="mt-4" />}
+            {u.qsRank && <SourceNote source={QS_SOURCE} className="mt-4" />}
           </Block>
 
           <Block id="admissions" title="Admissions">

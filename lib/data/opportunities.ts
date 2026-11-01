@@ -1,4 +1,5 @@
 import type { Opportunity } from "@/lib/types";
+import { extraOpportunities } from "./opportunities-extra";
 import { deadline, src } from "./sources";
 
 /*
@@ -9,7 +10,7 @@ import { deadline, src } from "./sources";
 
 const ANY_STUDENT = ["undergraduate", "masters", "phd"] as const;
 
-export const opportunities: Opportunity[] = [
+const baseOpportunities: Opportunity[] = [
   // ───────────── Scholarships ─────────────
   {
     slug: "chevening-scholarships",
@@ -1104,6 +1105,10 @@ export const opportunities: Opportunity[] = [
   },
 ];
 
+export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities];
+
+const bySlug = new Map(opportunities.map((o) => [o.slug, o]));
+
 export function getOpportunity(slug: string) {
-  return opportunities.find((o) => o.slug === slug);
+  return bySlug.get(slug);
 }

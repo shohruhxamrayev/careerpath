@@ -1,12 +1,15 @@
 import type { University } from "@/lib/types";
+import { GEO } from "./geo";
+import { QS2027 } from "./research/qs2027";
 import { COMMON_APP, OUAC, UCAS, deadline, src } from "./sources";
+import { extraUniversities } from "./universities-extra";
 
 /*
  * University seed dataset.
  *
  * Rules this file follows:
  *  - Websites and admissions URLs point to official university domains.
- *  - QS 2026 ranks are included only where checked against the published 2026 table.
+ *  - QS ranks come from the published QS World University Rankings 2027 table (see research/qs2027.ts).
  *  - Tuition is stored as a coarse indicative band, never as a precise current fee.
  *  - Deadlines describe the typical timing pattern of previous cycles and are marked
  *    "indicative" or "unverified". Students are always told to confirm on the official page.
@@ -23,7 +26,7 @@ const ukDeadline = (org: string, url: string, oxbridge = false) =>
     ? [deadline("UCAS application", "Typically mid-October for entry the following autumn", [10], src(org, url, "indicative"))]
     : [deadline("UCAS equal-consideration date", "Typically late January", [1], src(org, url, "indicative"))];
 
-export const universities: University[] = [
+const baseUniversities: University[] = [
   // ───────────── United States ─────────────
   {
     slug: "massachusetts-institute-of-technology",
@@ -44,7 +47,7 @@ export const universities: University[] = [
     notablePrograms: ["Electrical Engineering & Computer Science", "Mechanical Engineering", "Economics", "Mathematics", "Physics", "Sloan School of Management"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 1,
+    qsRank: 1,
     tuition: { band: "50k-plus", display: "Est. above $60,000 per year before aid", source: src("MIT Student Financial Services", "https://sfs.mit.edu", "indicative") },
     aid: { kind: "need-based-full", summary: "Need-blind admission for international applicants; meets full demonstrated need.", source: src("MIT Admissions", "https://mitadmissions.org/afford", "indicative") },
     english: { ielts: 7, toefl: 90, note: "Minimums commonly published as IELTS 7.0 / TOEFL 90, with higher scores recommended.", source: src("MIT Admissions", "https://mitadmissions.org/apply/process/tests", "indicative") },
@@ -74,7 +77,7 @@ export const universities: University[] = [
     notablePrograms: ["Computer Science", "Management Science & Engineering", "Economics", "Symbolic Systems", "Human Biology", "Graduate School of Business"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 3,
+    qsRank: 3,
     tuition: { band: "50k-plus", display: "Est. above $60,000 per year before aid", source: src("Stanford Financial Aid", "https://financialaid.stanford.edu", "indicative") },
     aid: { kind: "need-based-full", summary: "Need-aware for international applicants; meets full demonstrated need for those admitted.", source: src("Stanford Financial Aid", "https://financialaid.stanford.edu", "indicative") },
     english: { note: "No minimum English test score is published; the application itself must show strong English.", source: src("Stanford Admission", "https://admission.stanford.edu/apply/international/index.html", "indicative") },
@@ -101,7 +104,7 @@ export const universities: University[] = [
     notablePrograms: ["Economics", "Government", "Computer Science", "Applied Mathematics", "History & Literature", "Harvard Business School"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 5,
+    qsRank: 5,
     tuition: { band: "50k-plus", display: "Est. above $55,000 per year before aid", source: src("Harvard College Griffin Financial Aid", "https://college.harvard.edu/financial-aid", "indicative") },
     aid: { kind: "need-based-full", summary: "Need-blind for all applicants including international; meets full demonstrated need.", source: src("Harvard College Financial Aid", "https://college.harvard.edu/financial-aid", "indicative") },
     english: { note: "No English test is required; strong English must be evident across the application.", source: src("Harvard College Admissions", "https://college.harvard.edu/admissions/apply/international-applicants", "indicative") },
@@ -158,7 +161,7 @@ export const universities: University[] = [
     notablePrograms: ["Ross School of Business BBA", "Computer Science", "Economics", "Ford School of Public Policy", "Industrial & Operations Engineering"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 45,
+    qsRank: 45,
     tuition: { band: "50k-plus", display: "Est. above $55,000 per year for non-residents", source: src("U-M Office of the Registrar", "https://ro.umich.edu/tuition-residency", "indicative") },
     aid: { kind: "limited", summary: "Very limited need-based aid for international students; external funding is usually needed.", source: src("U-M Admissions", "https://admissions.umich.edu/apply/international-applicants", "indicative") },
     english: { note: "Check the current English proficiency guidance; scores are reviewed holistically.", source: src("U-M Admissions", "https://admissions.umich.edu/apply/international-applicants", "unverified") },
@@ -267,7 +270,7 @@ export const universities: University[] = [
     notablePrograms: ["Philosophy, Politics & Economics (PPE)", "Economics & Management", "Law", "Mathematics", "Computer Science", "MSc programmes at Saïd Business School"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 4,
+    qsRank: 4,
     tuition: { band: "30-50k", display: "Est. £30,000–£55,000 per year for international students, by course", source: src("University of Oxford Fees", "https://www.ox.ac.uk/admissions/undergraduate/fees-and-funding", "indicative") },
     aid: { kind: "limited", summary: "Limited undergraduate scholarships for international students; more funding at graduate level (e.g. Clarendon).", source: src("University of Oxford Funding", "https://www.ox.ac.uk/admissions/undergraduate/fees-and-funding", "indicative") },
     english: { ielts: 7, toefl: 100, note: "Standard level commonly IELTS 7.0 with 7.0 in each component; some courses require higher.", source: src("University of Oxford", "https://www.ox.ac.uk/admissions/undergraduate/applying-to-oxford/for-international-students/english-language-requirements", "indicative") },
@@ -294,7 +297,7 @@ export const universities: University[] = [
     notablePrograms: ["Natural Sciences", "Mathematics", "Economics", "Engineering", "Computer Science", "Human, Social & Political Sciences"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 6,
+    qsRank: 6,
     tuition: { band: "30-50k", display: "Est. £25,000–£60,000 per year for international students, by course", source: src("University of Cambridge Fees", "https://www.undergraduate.study.cam.ac.uk/fees-and-finance", "indicative") },
     aid: { kind: "limited", summary: "Limited undergraduate support via the Cambridge Trust; wider graduate scholarships including Gates Cambridge.", source: src("Cambridge Trust", "https://www.cambridgetrust.org", "indicative") },
     english: { ielts: 7.5, toefl: 110, note: "Commonly IELTS 7.5 with 7.0 in each element, or equivalent.", source: src("University of Cambridge", "https://www.undergraduate.study.cam.ac.uk/international-students/english-language-requirements", "indicative") },
@@ -323,7 +326,7 @@ export const universities: University[] = [
     notablePrograms: ["Computing", "Electrical & Electronic Engineering", "Mathematics", "Medicine", "MSc Business Analytics", "MSc Finance"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 2,
+    qsRank: 2,
     tuition: { band: "30-50k", display: "Est. £38,000–£50,000 per year for international students", source: src("Imperial Fees", "https://www.imperial.ac.uk/students/fees-and-funding", "indicative") },
     aid: { kind: "merit", summary: "Some merit-based scholarships for international students; most funding is at postgraduate level.", source: src("Imperial Scholarships", "https://www.imperial.ac.uk/study/fees-and-funding/scholarships", "indicative") },
     english: { ielts: 6.5, toefl: 92, note: "Standard requirement often IELTS 6.5 (6.0 per component); higher requirement for some courses.", source: src("Imperial Admissions", "https://www.imperial.ac.uk/study/apply/english-language", "indicative") },
@@ -351,7 +354,7 @@ export const universities: University[] = [
     notablePrograms: ["Economics", "Architecture (The Bartlett)", "Computer Science", "Laws LLB", "Management Science", "Politics & International Relations"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 9,
+    qsRank: 9,
     tuition: { band: "30-50k", display: "Est. £28,000–£45,000 per year for international students", source: src("UCL Fees", "https://www.ucl.ac.uk/students/fees", "indicative") },
     aid: { kind: "limited", summary: "Limited undergraduate scholarships for international students.", source: src("UCL Scholarships", "https://www.ucl.ac.uk/scholarships", "indicative") },
     english: { ielts: 6.5, toefl: 92, note: "Five levels: from IELTS 6.5 (Level 1) to 8.0 (Level 5) depending on course.", source: src("UCL Admissions", "https://www.ucl.ac.uk/prospective-students/undergraduate/english-language-requirements", "indicative") },
@@ -431,7 +434,7 @@ export const universities: University[] = [
     notablePrograms: ["Artificial Intelligence", "Informatics", "Economics", "Philosophy", "Business"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 34,
+    qsRank: 34,
     tuition: { band: "30-50k", display: "Est. £26,000–£36,000 per year for international students", source: src("University of Edinburgh Fees", "https://www.ed.ac.uk/student-funding/tuition-fees", "indicative") },
     aid: { kind: "merit", summary: "Merit and need-based scholarships for some international students.", source: src("University of Edinburgh Scholarships", "https://www.ed.ac.uk/student-funding", "indicative") },
     english: { ielts: 6.5, toefl: 92, note: "Commonly IELTS 6.5 with minimum 5.5 per component for undergraduate study.", source: src("University of Edinburgh", "https://www.ed.ac.uk/studying/undergraduate/applying/entry-requirements/english-language", "indicative") },
@@ -458,7 +461,7 @@ export const universities: University[] = [
     notablePrograms: ["Accounting & Finance", "Economics", "Computer Science", "Chemical Engineering", "Management"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 35,
+    qsRank: 35,
     tuition: { band: "30-50k", display: "Est. £26,000–£35,000 per year for international students", source: src("University of Manchester Fees", "https://www.manchester.ac.uk/study/undergraduate/fees-and-funding", "indicative") },
     aid: { kind: "merit", summary: "Global Futures and similar merit scholarships for some international students.", source: src("University of Manchester", "https://www.manchester.ac.uk/study/international/finance-and-scholarships", "indicative") },
     english: { ielts: 6.5, note: "Typically IELTS 6.0–7.0 depending on course.", source: src("University of Manchester", "https://www.manchester.ac.uk/study/international/admissions/english-language-requirements", "indicative") },
@@ -487,7 +490,7 @@ export const universities: University[] = [
     notablePrograms: ["Computer Science", "Engineering Science", "Rotman Commerce", "Economics", "Life Sciences"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 29,
+    qsRank: 29,
     tuition: { band: "30-50k", display: "Est. CAD 60,000–75,000 per year for international students", source: src("U of T Fees", "https://future.utoronto.ca/finances/tuition", "indicative") },
     aid: { kind: "merit", summary: "Lester B. Pearson International Scholarship covers full costs for a small number of students.", source: src("U of T Pearson Scholarship", "https://future.utoronto.ca/pearson", "indicative") },
     english: { ielts: 6.5, toefl: 100, note: "Commonly IELTS 6.5 with no band below 6.0, or TOEFL 100.", source: src("U of T Admissions", "https://future.utoronto.ca/apply/english-language-requirement", "indicative") },
@@ -515,7 +518,7 @@ export const universities: University[] = [
     notablePrograms: ["Sauder Commerce", "Computer Science", "Environmental Sciences", "Economics", "Engineering"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 40,
+    qsRank: 40,
     tuition: { band: "30-50k", display: "Est. CAD 45,000–65,000 per year for international students", source: src("UBC Tuition", "https://you.ubc.ca/financial-planning/cost", "indicative") },
     aid: { kind: "merit", summary: "International Scholars programme including need-based awards.", source: src("UBC Scholarships", "https://you.ubc.ca/financial-planning/scholarships-awards-international-students", "indicative") },
     english: { ielts: 6.5, toefl: 90, note: "Commonly IELTS 6.5 with 6.0 in each component, or TOEFL 90.", source: src("UBC Admissions", "https://you.ubc.ca/applying-ubc/requirements/english-language-competency", "indicative") },
@@ -541,7 +544,7 @@ export const universities: University[] = [
     notablePrograms: ["Desautels Management", "Economics", "Political Science", "Life Sciences", "Engineering"],
     languageOfInstruction: "English (French optional in assignments)",
     selectivity: "high",
-    qsRank2026: 27,
+    qsRank: 27,
     tuition: { band: "30-50k", display: "Est. CAD 30,000–65,000 per year depending on programme", source: src("McGill Fees", "https://www.mcgill.ca/student-accounts/tuition-fees", "indicative") },
     aid: { kind: "merit", summary: "Entrance scholarships for strong international applicants.", source: src("McGill Scholarships", "https://www.mcgill.ca/studentaid/scholarships-aid/future-undergrads", "indicative") },
     english: { ielts: 6.5, toefl: 90, note: "Commonly IELTS 6.5 / TOEFL 90 where proof is required.", source: src("McGill Admissions", "https://www.mcgill.ca/undergraduate-admissions/proficiency", "indicative") },
@@ -595,7 +598,7 @@ export const universities: University[] = [
     notablePrograms: ["Computer Science MSc", "Data Science MSc", "Robotics MSc", "Architecture", "Physics"],
     languageOfInstruction: "German (Bachelor's), English (most Master's)",
     selectivity: "high",
-    qsRank2026: 7,
+    qsRank: 7,
     tuition: { band: "under-5k", display: "Low tuition — est. a few thousand CHF per year; living costs are high", source: src("ETH Zurich Fees", "https://ethz.ch/en/studies/financial/tuition-fees.html", "indicative") },
     aid: { kind: "merit", summary: "Excellence Scholarship & Opportunity Programme (ESOP) for top master's applicants.", source: src("ETH Zurich Scholarships", "https://ethz.ch/en/studies/financial/scholarships.html", "indicative") },
     english: { ielts: 7, toefl: 100, note: "Master's programmes commonly require IELTS 7.0 / TOEFL 100. Bachelor's study requires German.", source: src("ETH Zurich", "https://ethz.ch/en/studies/registration-application/master/application/language-requirements.html", "indicative") },
@@ -625,7 +628,7 @@ export const universities: University[] = [
     notablePrograms: ["Informatics", "Management & Technology", "Mechanical Engineering", "Data Engineering & Analytics MSc", "Robotics MSc"],
     languageOfInstruction: "German and English (varies by programme)",
     selectivity: "high",
-    qsRank2026: 22,
+    qsRank: 22,
     tuition: { band: "5-15k", display: "Tuition for non-EU students introduced recently — est. €4,000–€12,000 per year by programme", source: src("TUM Fees", "https://www.tum.de/en/studies/fees", "indicative") },
     aid: { kind: "limited", summary: "Limited scholarships (e.g. Deutschlandstipendium); DAAD funding is the main external route.", source: src("TUM Scholarships", "https://www.tum.de/en/studies/fees-and-financial-aid", "indicative") },
     english: { ielts: 6.5, toefl: 88, note: "English-taught programmes commonly ask for IELTS 6.5 / TOEFL 88.", source: src("TUM", "https://www.tum.de/en/studies/application/language-requirements", "indicative") },
@@ -730,7 +733,7 @@ export const universities: University[] = [
     notablePrograms: ["Computer Science", "Business Administration", "Data Science & Analytics", "Philosophy, Politics & Economics", "Lee Kuan Yew School of Public Policy"],
     languageOfInstruction: "English",
     selectivity: "most",
-    qsRank2026: 8,
+    qsRank: 8,
     tuition: { band: "15-30k", display: "Est. S$18,000–S$40,000 per year (lower with the MOE Tuition Grant, which carries a work bond)", source: src("NUS Fees", "https://www.nus.edu.sg/registrar/administrative-policies-procedures/undergraduate/undergraduate-fees", "indicative") },
     aid: { kind: "government", summary: "MOE Tuition Grant (with a three-year Singapore work commitment) plus merit scholarships.", source: src("NUS Financial Aid", "https://www.nus.edu.sg/oam/financial-aid", "indicative") },
     english: { ielts: 6.5, toefl: 92, note: "Commonly required for applicants whose school language was not English.", source: src("NUS Admissions", "https://www.nus.edu.sg/oam/admissions", "indicative") },
@@ -757,7 +760,7 @@ export const universities: University[] = [
     notablePrograms: ["Computer Science", "Data Science & AI", "Business", "Communication Studies", "Materials Engineering"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 12,
+    qsRank: 12,
     tuition: { band: "15-30k", display: "Est. S$18,000–S$40,000 per year (lower with the MOE Tuition Grant)", source: src("NTU Fees", "https://www.ntu.edu.sg/admissions/undergraduate/financial-matters", "indicative") },
     aid: { kind: "government", summary: "MOE Tuition Grant plus NTU merit scholarships.", source: src("NTU Scholarships", "https://www.ntu.edu.sg/admissions/undergraduate/scholarships", "indicative") },
     english: { ielts: 6.5, toefl: 90, note: "Commonly IELTS 6.5 / TOEFL 90 for international qualifications.", source: src("NTU Admissions", "https://www.ntu.edu.sg/admissions/undergraduate", "indicative") },
@@ -784,7 +787,7 @@ export const universities: University[] = [
     notablePrograms: ["PEAK: Japan in East Asia", "PEAK: Environmental Sciences", "Graduate School of Engineering", "Graduate School of Public Policy"],
     languageOfInstruction: "Japanese; English for PEAK and many graduate programmes",
     selectivity: "most",
-    qsRank2026: 36,
+    qsRank: 36,
     tuition: { band: "under-5k", display: "Low national-university tuition — est. ¥540,000 per year", source: src("UTokyo Fees", "https://www.u-tokyo.ac.jp/en/prospective-students/fees.html", "indicative") },
     aid: { kind: "government", summary: "MEXT government scholarships and university scholarships for international students.", source: src("UTokyo", "https://www.u-tokyo.ac.jp/en/prospective-students", "indicative") },
     english: { note: "English proficiency evidence required for English-taught programmes; no single fixed score.", source: src("UTokyo PEAK", "https://peak.c.u-tokyo.ac.jp", "unverified") },
@@ -839,7 +842,7 @@ export const universities: University[] = [
     notablePrograms: ["BBA (Finance)", "BEcon & Finance", "Bachelor of Laws", "Computer Science", "Social Sciences"],
     languageOfInstruction: "English",
     selectivity: "high",
-    qsRank2026: 11,
+    qsRank: 11,
     tuition: { band: "15-30k", display: "Est. HK$180,000+ per year for non-local students", source: src("HKU Admissions", "https://admissions.hku.hk/fees-and-scholarships", "indicative") },
     aid: { kind: "merit", summary: "Entrance scholarships for outstanding non-local students.", source: src("HKU Scholarships", "https://admissions.hku.hk/fees-and-scholarships", "indicative") },
     english: { ielts: 6.5, toefl: 80, note: "Commonly IELTS 6.5 overall with no subtest below 6.0, or equivalent.", source: src("HKU Admissions", "https://admissions.hku.hk", "indicative") },
@@ -1085,6 +1088,18 @@ export const universities: University[] = [
   },
 ];
 
+/**
+ * Final dataset: hand-written records above + the researched expansion, with QS 2027 ranks
+ * (verified against the published table) and coordinates for the 3D globe applied on top.
+ */
+export const universities: University[] = [...baseUniversities, ...extraUniversities].map((u) => ({
+  ...u,
+  qsRank: QS2027[u.slug],
+  geo: u.geo ?? GEO[u.slug],
+}));
+
+const bySlug = new Map(universities.map((u) => [u.slug, u]));
+
 export function getUniversity(slug: string) {
-  return universities.find((u) => u.slug === slug);
+  return bySlug.get(slug);
 }

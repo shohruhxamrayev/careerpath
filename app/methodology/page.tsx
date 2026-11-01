@@ -52,7 +52,7 @@ export default function MethodologyPage() {
             <h2 className="mb-3 text-[20px] font-semibold">Data & sources</h2>
             <p>The seed dataset was compiled in {compiled}. Every time-sensitive fact carries a source organisation, a link to the official page and one of three statuses:</p>
             <ul>
-              <li><strong>Verified</strong> — checked against the source on the date shown (for example, QS 2026 ranks).</li>
+              <li><strong>Verified</strong> — checked against the source on the date shown (for example, QS 2027 ranks).</li>
               <li><strong>Indicative — confirm</strong> — reliable general guidance from the official source; exact figures vary by programme or cycle.</li>
               <li><strong>Not yet verified</strong> — not checked for the current cycle. Always confirm before relying on it.</li>
             </ul>

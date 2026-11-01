@@ -4,7 +4,7 @@ import type { DeadlineInfo, Source, VerificationStatus } from "@/lib/types";
 export const DATASET_COMPILED = "2026-11";
 
 export const QS_SOURCE: Source = {
-  org: "QS World University Rankings 2026",
+  org: "QS World University Rankings 2027",
   url: "https://www.topuniversities.com/world-university-rankings",
   status: "verified",
   lastVerified: "2026-11",

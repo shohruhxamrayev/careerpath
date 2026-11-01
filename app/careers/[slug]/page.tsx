@@ -42,7 +42,7 @@ export default function CareerPage({ params }: { params: { slug: string } }) {
   const otherOpps = opps.filter((o) => !comps.includes(o) && !interns.includes(o));
   const unis = universities
     .filter((u) => u.fields.includes(c.relatedFields[0]))
-    .sort((a, b) => (a.qsRank2026 ?? 999) - (b.qsRank2026 ?? 999))
+    .sort((a, b) => (a.qsRank ?? 999) - (b.qsRank ?? 999))
     .slice(0, 3);
 
   return (

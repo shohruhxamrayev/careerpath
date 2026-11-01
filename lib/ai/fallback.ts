@@ -101,8 +101,8 @@ export function fallbackAnswer(question: string, profile: StudentProfile | null,
 
     case "universities": {
       if (!ready) {
-        const top = [...universities].filter((u) => u.qsRank2026).sort((a, b) => a.qsRank2026! - b.qsRank2026!).slice(0, 5);
-        return `Here are some highly ranked universities in our dataset (QS 2026):\n\n${top.map((u) => `- ${link(u.name, `/universities/${u.slug}`)} — ${u.city}, ${u.country}. ${u.aid.summary}`).join("\n")}\n\nRanking alone isn't a good way to choose. Fit with your field, budget and English level matters more.${nudge}`;
+        const top = [...universities].filter((u) => u.qsRank).sort((a, b) => a.qsRank! - b.qsRank!).slice(0, 5);
+        return `Here are some highly ranked universities in our dataset (QS 2027):\n\n${top.map((u) => `- ${link(u.name, `/universities/${u.slug}`)} — ${u.city}, ${u.country}. ${u.aid.summary}`).join("\n")}\n\nRanking alone isn't a good way to choose. Fit with your field, budget and English level matters more.${nudge}`;
       }
       const ranked = rankUniversities(profile!).filter((r) => r.match.eligible !== false);
       const top = ranked.slice(0, 5);

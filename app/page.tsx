@@ -164,7 +164,7 @@ export default function Home() {
           <p className="px-4 py-2.5 text-[12px] text-ink-3">Example of how facts are labelled</p>
           {[
             ["English proficiency", "About IELTS 7.0 / TOEFL 90", "Indicative — confirm", "info"],
-            ["Ranking", "#1 in QS World University Rankings 2026", "Verified", "ok"],
+            ["Ranking", "#1 in QS World University Rankings 2027", "Verified", "ok"],
             ["Bachelor's application", "Typically by 30 April", "Not yet verified", "warn"],
           ].map(([l, v, s, t]) => (
             <div key={l} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">

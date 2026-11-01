@@ -40,8 +40,8 @@ export function UniversityDirectory() {
       }
       if (f.testing === "none" && !(u.testing.policy === "not-used" || u.testing.policy === "optional")) return false;
       if (f.english && !(u.english.ielts != null && u.english.ielts <= Number(f.english))) return false;
-      if (f.rank === "ranked" && !u.qsRank2026) return false;
-      if (f.rank && f.rank !== "ranked" && !(u.qsRank2026 && u.qsRank2026 <= Number(f.rank))) return false;
+      if (f.rank === "ranked" && !u.qsRank) return false;
+      if (f.rank && f.rank !== "ranked" && !(u.qsRank && u.qsRank <= Number(f.rank))) return false;
       return true;
     });
     const sort = f.sort || (personalised ? "match" : "rank");
@@ -51,7 +51,7 @@ export function UniversityDirectory() {
         case "name": return a.u.name.localeCompare(b.u.name);
         case "tuition": return (a.u.tuition.band ? TUITION_BAND_MAX[a.u.tuition.band] : 1e9) - (b.u.tuition.band ? TUITION_BAND_MAX[b.u.tuition.band] : 1e9);
         case "deadline": return Math.min(...a.u.deadlines.map((d) => monthsAhead(d.months) ?? 99)) - Math.min(...b.u.deadlines.map((d) => monthsAhead(d.months) ?? 99));
-        default: return (a.u.qsRank2026 ?? 999) - (b.u.qsRank2026 ?? 999) || a.u.name.localeCompare(b.u.name);
+        default: return (a.u.qsRank ?? 999) - (b.u.qsRank ?? 999) || a.u.name.localeCompare(b.u.name);
       }
     });
     return list;
@@ -80,7 +80,7 @@ export function UniversityDirectory() {
           <FilterSelect id="f-deadline" label="Application deadline" value={f.deadline} onChange={(v) => set("deadline", v)} options={[["", "Any time"], ["2", "Within ~2 months"], ["4", "Within ~4 months"], ["6", "Within ~6 months"]]} />
           <FilterSelect id="f-testing" label="Test requirements" value={f.testing} onChange={(v) => set("testing", v)} options={[["", "Any policy"], ["none", "No SAT/ACT required"]]} />
           <FilterSelect id="f-english" label="English requirement" value={f.english} onChange={(v) => set("english", v)} options={[["", "Any"], ["6", "IELTS 6.0 or lower"], ["6.5", "IELTS 6.5 or lower"], ["7", "IELTS 7.0 or lower"]]} />
-          <FilterSelect id="f-rank" label="Ranking (QS 2026)" value={f.rank} onChange={(v) => set("rank", v)} options={[["", "Any"], ["10", "Top 10"], ["25", "Top 25"], ["50", "Top 50"], ["ranked", "Ranked in our data"]]} />
+          <FilterSelect id="f-rank" label="Ranking (QS 2027)" value={f.rank} onChange={(v) => set("rank", v)} options={[["", "Any"], ["10", "Top 10"], ["25", "Top 25"], ["50", "Top 50"], ["ranked", "Ranked in our data"]]} />
         </FilterPanel>
 
         <div className="min-w-0">
