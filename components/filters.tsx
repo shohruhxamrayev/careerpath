@@ -52,8 +52,8 @@ export function useUrlFilters<T extends Record<string, string>>(defaults: T) {
   }, [params]);
 
   const set = useCallback((k: keyof T, v: string) => setState((s) => ({ ...s, [k]: v })), []);
-  const reset = useCallback(() => setState((s) => ({ ...defaults, q: (s as Record<string, string>).q ?? "" } as T)), [defaults]);
-  const activeCount = Object.entries(state).filter(([k, v]) => k !== "q" && k !== "sort" && v && v !== defaults[k]).length;
+  const reset = useCallback(() => setState((s) => ({ ...defaults, q: (s as Record<string, string>).q ?? "", ...("view" in s ? { view: (s as Record<string, string>).view } : {}) } as T)), [defaults]);
+  const activeCount = Object.entries(state).filter(([k, v]) => k !== "q" && k !== "sort" && k !== "view" && v && v !== defaults[k]).length;
   return { state, set, reset, activeCount };
 }
 

@@ -102,17 +102,17 @@ export function Assistant() {
 
   return (
     <div className="flex flex-1 flex-col">
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container flex flex-col gap-3 py-5 sm:flex-row sm:items-center sm:justify-between">
           <div className="flex items-center gap-3">
             <LogoMark className="h-9 w-9" />
             <div>
               <h1 className="text-[18px] font-semibold">Path Assistant</h1>
-              <p className="text-[13px] text-ink-3">{personalised ? "Using your profile and CareerPath's verified data" : "Using CareerPath's verified data"}</p>
+              <p className="text-[13px] text-night-300">{personalised ? "Using your profile and CareerPath's verified data" : "Using CareerPath's verified data"}</p>
             </div>
           </div>
           {messages.length > 0 && (
-            <Button variant="ghost" size="sm" onClick={() => setMessages([])}>
+            <Button variant="nightOutline" size="sm" onClick={() => setMessages([])}>
               <RotateCcw className="h-4 w-4" /> New conversation
             </Button>
           )}
@@ -130,19 +130,22 @@ export function Assistant() {
 
       <div className="container flex max-w-3xl flex-1 flex-col py-6">
         {messages.length === 0 ? (
-          <div className="flex flex-1 flex-col items-center justify-center py-10 text-center">
-            <div className="mb-4 flex h-12 w-12 items-center justify-center rounded-md bg-brand-50 text-brand-700">
+          <div className="night relative -mx-4 flex flex-1 flex-col items-center justify-center overflow-hidden rounded-none bg-night-950 px-4 py-14 text-center sm:mx-0 sm:rounded-2xl sm:px-8">
+            <div className="night-grid pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" aria-hidden />
+            <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[520px] -translate-x-1/2 rounded-full bg-mint/10 blur-[100px]" aria-hidden />
+            <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-mint/25 bg-mint/10 text-mint shadow-[0_0_40px_-8px_rgba(94,234,176,0.5)]">
               <Sparkles className="h-6 w-6" />
             </div>
-            <h2 className="display text-[30px]">How can I help you plan?</h2>
-            <p className="mt-2 max-w-md text-[14px] text-ink-3">
+            <h2 className="display relative text-[34px] leading-tight text-white sm:text-[40px]">How can I help you <span className="font-serif italic text-mint">plan?</span></h2>
+            <p className="relative mt-3 max-w-md text-[14.5px] text-night-300">
               Ask about scholarships, universities, careers or your application timeline.{" "}
-              {!user ? <><Link href="/signup?next=/assistant" className="link">Create a profile</Link> for personalised answers.</> : !personalised ? <><Link href="/profile" className="link">Complete your profile</Link> for personalised answers.</> : null}
+              {!user ? <><Link href="/signup?next=/assistant" className="text-mint underline-offset-4 hover:underline">Create a profile</Link> for personalised answers.</> : !personalised ? <><Link href="/profile" className="text-mint underline-offset-4 hover:underline">Complete your profile</Link> for personalised answers.</> : null}
             </p>
-            <div className="mt-8 grid w-full gap-2 sm:grid-cols-2">
+            <div className="relative mt-8 grid w-full gap-2 sm:grid-cols-2">
               {PROMPTS.map((p) => (
-                <button key={p} onClick={() => send(p)} className="rounded-md border border-line bg-surface px-4 py-3 text-left text-[13.5px] text-ink-2 transition-colors hover:border-brand-200 hover:bg-brand-50/50">
+                <button key={p} onClick={() => send(p)} className="group flex items-center justify-between gap-3 rounded-lg border border-white/[0.08] bg-white/[0.03] px-4 py-3 text-left text-[13.5px] text-night-100 transition-colors hover:border-mint/40 hover:bg-mint/[0.06] hover:text-white">
                   {p}
+                  <ArrowUp className="h-3.5 w-3.5 shrink-0 rotate-45 text-night-400 transition-colors group-hover:text-mint" />
                 </button>
               ))}
             </div>

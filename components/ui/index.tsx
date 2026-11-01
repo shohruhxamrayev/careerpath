@@ -7,17 +7,19 @@ import { cn } from "@/lib/utils";
 
 // ───────────── Button ─────────────
 
-type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle";
+type Variant = "primary" | "secondary" | "ghost" | "danger" | "subtle" | "mint" | "nightOutline";
 type Size = "sm" | "md" | "lg";
 
 const base =
-  "inline-flex items-center justify-center gap-2 rounded font-medium transition-[background-color,border-color,color,box-shadow] duration-150 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap select-none";
+  "inline-flex items-center justify-center gap-2 rounded-md font-medium transition-[background-color,border-color,color,box-shadow] duration-150 disabled:pointer-events-none disabled:opacity-50 whitespace-nowrap select-none";
 const variants: Record<Variant, string> = {
   primary: "bg-brand-700 text-white hover:bg-brand-800 shadow-[inset_0_1px_0_rgba(255,255,255,0.08)]",
   secondary: "border border-line-strong bg-surface text-ink hover:border-ink-4 hover:bg-paper",
   ghost: "text-ink-2 hover:bg-ink/[0.05] hover:text-ink",
   subtle: "bg-brand-50 text-brand-700 hover:bg-brand-100",
   danger: "bg-bad text-white hover:bg-[#8a2822]",
+  mint: "bg-mint text-night-900 hover:bg-mint-300 shadow-[0_0_0_1px_rgba(94,234,176,0.4),0_8px_30px_-8px_rgba(94,234,176,0.6)]",
+  nightOutline: "border border-white/15 bg-white/[0.03] text-white hover:border-white/30 hover:bg-white/[0.07]",
 };
 const sizes: Record<Size, string> = {
   sm: "h-8 px-3 text-[13px]",
@@ -216,19 +218,29 @@ export function CardSkeletonGrid({ count = 6 }: { count?: number }) {
   );
 }
 
-export function PageHeader({ eyebrow, title, description, actions, children }: { eyebrow?: string; title: string; description?: React.ReactNode; actions?: React.ReactNode; children?: React.ReactNode }) {
+export function PageHeader({ eyebrow, title, accent, description, actions, children, visual }: { eyebrow?: string; title: string; accent?: string; description?: React.ReactNode; actions?: React.ReactNode; children?: React.ReactNode; visual?: React.ReactNode }) {
   return (
-    <header className="border-b border-line bg-surface">
-      <div className="container py-8 sm:py-10">
-        <div className="flex flex-col gap-4 md:flex-row md:items-end md:justify-between">
-          <div className="max-w-2xl">
-            {eyebrow && <p className="eyebrow mb-2">{eyebrow}</p>}
-            <h1 className="display text-[32px] leading-[1.1] sm:text-[40px]">{title}</h1>
-            {description && <p className="mt-3 text-[15px] leading-relaxed text-ink-3">{description}</p>}
+    <header className="night noise relative overflow-hidden border-b border-white/[0.06]">
+      <div className="night-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_80%_70%_at_30%_0%,black,transparent)]" aria-hidden />
+      <div className="pointer-events-none absolute -left-32 -top-40 h-[420px] w-[620px] rounded-full bg-mint/10 blur-[110px]" aria-hidden />
+      <div className="pointer-events-none absolute -right-20 top-10 h-[320px] w-[420px] rounded-full bg-peri/10 blur-[110px]" aria-hidden />
+      <div className={cn("container relative py-12 sm:py-16", !!visual && "grid gap-8 lg:grid-cols-[1.1fr_1fr] lg:items-center")}>
+        <div>
+          <div className="flex flex-col gap-5 md:flex-row md:items-end md:justify-between">
+            <div className="max-w-2xl">
+              {eyebrow && <p className="eyebrow mb-3">{eyebrow}</p>}
+              <h1 className="display text-[40px] leading-[1.02] sm:text-[56px]">
+                {title}
+                {accent && <> <span className="accent-serif text-gradient">{accent}</span></>}
+              </h1>
+              {description && <p className="mt-4 max-w-xl text-[16px] leading-relaxed text-night-300">{description}</p>}
+            </div>
+            {actions && !visual && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
           </div>
-          {actions && <div className="flex shrink-0 flex-wrap gap-2">{actions}</div>}
+          {actions && visual && <div className="mt-6 flex flex-wrap gap-2">{actions}</div>}
+          {children}
         </div>
-        {children}
+        {visual}
       </div>
     </header>
   );
@@ -258,7 +270,7 @@ export function Chip({ active, onClick, children, className }: { active?: boolea
       onClick={onClick}
       aria-pressed={active}
       className={cn(
-        "inline-flex h-8 items-center gap-1.5 rounded border px-3 text-[13px] transition-colors",
+        "inline-flex h-8 shrink-0 items-center gap-1.5 whitespace-nowrap rounded border px-3 text-[13px] transition-colors",
         active ? "border-brand-600 bg-brand-50 font-medium text-brand-800" : "border-line-strong bg-surface text-ink-2 hover:border-ink-4",
         className,
       )}

@@ -99,7 +99,7 @@ export function ProfileEditor() {
 
   return (
     <div className="pb-28">
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container py-8">
           {onboarding && (
             <div className="mb-6 rounded-md border border-brand-200 bg-brand-50 px-4 py-3 text-[14px] text-brand-800">
@@ -111,10 +111,10 @@ export function ProfileEditor() {
             <div>
               <h1 className="display text-[36px] leading-tight">{draft.personal.name || "Your profile"}</h1>
               <p className="mt-2 text-[15px] text-ink-3">
-                Your profile is <span className="font-semibold text-ink">{completion.percent}% complete</span>. Everything here is used by the matching engine.
+                Your profile is <span className="font-semibold text-white">{completion.percent}% complete</span>. Everything here is used by the matching engine.
               </p>
             </div>
-            <ButtonLink href="/for-you" variant="secondary">
+            <ButtonLink href="/for-you" variant="nightOutline">
               View recommendations <ArrowRight className="h-4 w-4" />
             </ButtonLink>
           </div>

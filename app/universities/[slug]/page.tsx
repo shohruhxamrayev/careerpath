@@ -5,6 +5,7 @@ import { notFound } from "next/navigation";
 import { AddToPlannerButton, SaveButton } from "@/components/actions";
 import { OpportunityCard } from "@/components/cards";
 import { MatchPanel, SectionNav } from "@/components/detail";
+import { LocationGlobe } from "@/components/LocationGlobe";
 import { SourceNote } from "@/components/match";
 import { Badge, ButtonLink } from "@/components/ui";
 import { getOpportunity, opportunities } from "@/lib/data/opportunities";
@@ -47,9 +48,9 @@ export default function UniversityPage({ params }: { params: { slug: string } })
 
   return (
     <>
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container py-8">
-          <Link href="/universities" className="inline-flex items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink">
+          <Link href="/universities" className="inline-flex items-center gap-1.5 text-[13px] text-night-300 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5" /> All universities
           </Link>
           <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -63,7 +64,7 @@ export default function UniversityPage({ params }: { params: { slug: string } })
               <h1 className="display mt-3 text-[34px] leading-[1.1] sm:text-[44px]">{u.name}</h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-ink-3">
                 <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {u.city}, {u.country}</span>
-                <a href={u.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-brand-700">
+                <a href={u.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-mint">
                   <Globe className="h-4 w-4" /> {new URL(u.website).hostname.replace(/^www\./, "")}
                   <span className="sr-only">(opens in a new tab)</span>
                 </a>
@@ -73,7 +74,7 @@ export default function UniversityPage({ params }: { params: { slug: string } })
             <div className="flex flex-wrap gap-2">
               <SaveButton kind="university" slug={u.slug} title={u.shortName ?? u.name} variant="button" />
               <AddToPlannerButton kind="university" slug={u.slug} title={u.name} subtitle={`${u.city}, ${u.country}`} deadlines={u.deadlines} />
-              <ButtonLink href={u.admissionsUrl} external variant="secondary">
+              <ButtonLink href={u.admissionsUrl} external variant="nightOutline">
                 Official admissions <ExternalLink className="h-3.5 w-3.5" />
               </ButtonLink>
             </div>
@@ -174,6 +175,7 @@ export default function UniversityPage({ params }: { params: { slug: string } })
         </div>
 
         <aside className="lg:sticky lg:top-32 lg:self-start">
+          {u.geo && <LocationGlobe id={u.slug} label={u.shortName ?? u.name} sub={`${u.city}, ${u.country}`} lat={u.geo[0]} lng={u.geo[1]} />}
           <MatchPanel kind="university" slug={u.slug} />
         </aside>
       </div>

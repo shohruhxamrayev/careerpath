@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Planner" };
 
 export default function PlannerPage() {
   return (
-    <GuestGate title="Plan every application in one place" body="Save universities and opportunities, track application status, add deadlines and tasks, and see what's due next.">
+    <GuestGate title="Plan every application in one place" body="Save universities and opportunities, track application status, add deadlines and tasks, and see what's due next." perks={["Track the status of every application", "A calendar of deadlines and your own tasks", "Saved universities and opportunities in one list"]}>
       <Suspense>
         <Planner />
       </Suspense>

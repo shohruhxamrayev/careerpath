@@ -47,9 +47,9 @@ export default function CareerPage({ params }: { params: { slug: string } }) {
 
   return (
     <>
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container py-8">
-          <Link href="/careers" className="inline-flex items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink">
+          <Link href="/careers" className="inline-flex items-center gap-1.5 text-[13px] text-night-300 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5" /> All careers
           </Link>
           <p className="eyebrow mt-5">{c.family}</p>

@@ -56,7 +56,7 @@ export function Planner() {
 
   return (
     <div className="pb-16">
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container pt-8">
           <div className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
             <div>
@@ -65,8 +65,8 @@ export function Planner() {
               <p className="mt-2 text-[14.5px] text-ink-3">{apps.length} applications · {tasks.filter((t) => !t.done).length} open tasks</p>
             </div>
             <div className="flex gap-2">
-              <Button variant="secondary" onClick={() => setNewTask({})}><Plus className="h-4 w-4" /> Task</Button>
-              <Button onClick={() => setNewApp(true)}><Plus className="h-4 w-4" /> Application</Button>
+              <Button variant="nightOutline" onClick={() => setNewTask({})}><Plus className="h-4 w-4" /> Task</Button>
+              <Button variant="mint" onClick={() => setNewApp(true)}><Plus className="h-4 w-4" /> Application</Button>
             </div>
           </div>
           <div role="tablist" aria-label="Planner views" className="scrollbar-none -mx-4 mt-6 flex gap-1 overflow-x-auto px-4">
@@ -76,7 +76,7 @@ export function Planner() {
                 role="tab"
                 aria-selected={tab === t.id}
                 onClick={() => setTab(t.id)}
-                className={cn("flex items-center gap-2 whitespace-nowrap border-b-2 px-3 pb-3 pt-1 text-[14px] transition-colors", tab === t.id ? "border-brand-600 font-medium text-ink" : "border-transparent text-ink-3 hover:text-ink")}
+                className={cn("flex items-center gap-2 whitespace-nowrap border-b-2 px-3 pb-3 pt-1 text-[14px] transition-colors", tab === t.id ? "border-mint font-medium text-white" : "border-transparent text-night-300 hover:text-white")}
               >
                 <t.icon className="h-4 w-4" /> {t.label}
               </button>

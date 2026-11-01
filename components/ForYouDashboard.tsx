@@ -34,7 +34,7 @@ export function ForYouDashboard() {
 
   return (
     <div className="pb-16">
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container py-8 sm:py-10">
           <p className="eyebrow mb-2">For you</p>
           <div className="flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -47,7 +47,7 @@ export function ForYouDashboard() {
             <div className="w-full max-w-xs">
               <div className="flex justify-between text-[13px]"><span className="text-ink-3">Profile</span><span className="font-mono">{completion.percent}%</span></div>
               <Progress value={completion.percent} className="mt-1.5" label="Profile completion" />
-              <Link href="/profile" className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-brand-700 hover:underline">
+              <Link href="/profile" className="mt-2 inline-flex items-center gap-1 text-[13px] font-medium text-mint hover:underline">
                 <UserRound className="h-3.5 w-3.5" /> Edit profile
               </Link>
             </div>

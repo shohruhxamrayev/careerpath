@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "For You" };
 
 export default function ForYouPage() {
   return (
-    <GuestGate title="Your personalised recommendations" body="Create a profile and CareerPath will recommend universities, scholarships, competitions, internships, careers and skills — each with the reason why.">
+    <GuestGate title="Your personalised recommendations" body="Create a profile and CareerPath will recommend universities, scholarships, competitions, internships, careers and skills — each with the reason why." perks={["Universities and scholarships ranked by Profile Match", "Eligibility checked against each programme's rules", "Careers and the skills to build next"]}>
       <ForYouDashboard />
     </GuestGate>
   );

@@ -1,7 +1,9 @@
-import "@fontsource-variable/inter";
-import "@fontsource-variable/newsreader";
-import "@fontsource-variable/jetbrains-mono";
+import "@fontsource-variable/bricolage-grotesque";
+import "@fontsource/instrument-serif/400.css";
+import "@fontsource/instrument-serif/400-italic.css";
 import "./globals.css";
+import { GeistMono } from "geist/font/mono";
+import { GeistSans } from "geist/font/sans";
 import type { Metadata, Viewport } from "next";
 import { Footer } from "@/components/layout/Footer";
 import { Navbar } from "@/components/layout/Navbar";
@@ -14,11 +16,11 @@ export const metadata: Metadata = {
   icons: { icon: "/icon.svg" },
 };
 
-export const viewport: Viewport = { themeColor: "#F7F6F2", width: "device-width", initialScale: 1 };
+export const viewport: Viewport = { themeColor: "#070A10", width: "device-width", initialScale: 1 };
 
 export default function RootLayout({ children }: { children: React.ReactNode }) {
   return (
-    <html lang="en">
+    <html lang="en" className={`${GeistSans.variable} ${GeistMono.variable}`}>
       <body className="flex min-h-screen flex-col">
         <Providers>
           <Navbar />

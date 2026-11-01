@@ -1,6 +1,7 @@
 import type { Career } from "@/lib/types";
+import { extraCareers } from "./careers-extra";
 
-export const careers: Career[] = [
+const baseCareers: Career[] = [
   {
     slug: "business-analyst",
     title: "Business Analyst",
@@ -297,6 +298,8 @@ export const careers: Career[] = [
     outlook: "Graduate degrees and international experience strengthen candidates.",
   },
 ];
+
+export const careers: Career[] = [...baseCareers, ...extraCareers];
 
 export function getCareer(slug: string) {
   return careers.find((c) => c.slug === slug);

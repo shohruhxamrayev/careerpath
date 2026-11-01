@@ -1,9 +1,10 @@
 "use client";
 
-import { GraduationCap, Sparkles } from "lucide-react";
+import { Globe2, GraduationCap, LayoutGrid, Sparkles } from "lucide-react";
 import Link from "next/link";
 import { useMemo } from "react";
 import { UniversityCard } from "@/components/cards";
+import { GlobeExplorer } from "@/components/directories/GlobeExplorer";
 import { FilterPanel, FilterSelect, SearchInput, useUrlFilters } from "@/components/filters";
 import { Button, EmptyState } from "@/components/ui";
 import { DEGREE_LEVEL_LABELS, FIELD_LABELS, FIELDS, REGIONS, TUITION_BAND_MAX } from "@/lib/data/taxonomy";
@@ -12,9 +13,9 @@ import { isProfileReady } from "@/lib/matching/profile";
 import { matchUniversity } from "@/lib/matching/university";
 import { useApp } from "@/lib/store/AppProvider";
 import type { TuitionBand } from "@/lib/types";
-import { monthsAhead } from "@/lib/utils";
+import { cn, monthsAhead } from "@/lib/utils";
 
-const DEFAULTS = { q: "", country: "", region: "", field: "", level: "", tuition: "", aid: "", deadline: "", testing: "", english: "", rank: "", sort: "" };
+const DEFAULTS = { q: "", country: "", region: "", field: "", level: "", tuition: "", aid: "", deadline: "", testing: "", english: "", rank: "", sort: "", view: "" };
 const COUNTRIES = Array.from(new Set(universities.map((u) => u.country))).sort();
 
 export function UniversityDirectory() {
@@ -97,12 +98,23 @@ export function UniversityDirectory() {
               </select>
             </div>
           </div>
-          <p className="mb-4 text-[13px] text-ink-3" aria-live="polite">
-            {rows.length} {rows.length === 1 ? "university" : "universities"}
-            {activeCount > 0 && " match your filters"}
-          </p>
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <p className="text-[13px] text-ink-3" aria-live="polite">
+              {rows.length} {rows.length === 1 ? "university" : "universities"}
+              {activeCount > 0 && " match your filters"}
+            </p>
+            <div className="inline-flex rounded-lg border border-line bg-surface p-0.5" role="group" aria-label="View">
+              {([["", "Grid", LayoutGrid], ["globe", "Globe", Globe2]] as const).map(([v, label, I]) => (
+                <button key={label} onClick={() => set("view", v)} aria-pressed={f.view === v} className={cn("inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-[13px] transition-colors", f.view === v ? "bg-night-900 text-white" : "text-ink-3 hover:text-ink")}>
+                  <I className="h-3.5 w-3.5" /> {label}
+                </button>
+              ))}
+            </div>
+          </div>
           {rows.length === 0 ? (
             <EmptyState icon={<GraduationCap />} title="No universities found." body="Try a broader search or remove some filters." action={<Button variant="secondary" onClick={() => { reset(); set("q", ""); }}>Clear search and filters</Button>} />
+          ) : f.view === "globe" ? (
+            <GlobeExplorer rows={rows} fromTashkent={!personalised || data?.profile.personal.country === "Uzbekistan"} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
               {rows.map(({ u, m }) => <UniversityCard key={u.slug} u={u} match={m} />)}

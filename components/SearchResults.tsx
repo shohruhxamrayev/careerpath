@@ -24,7 +24,7 @@ export function SearchResults() {
 
   return (
     <>
-      <header className="border-b border-line bg-surface">
+      <header className="night-band">
         <div className="container py-8">
           <p className="eyebrow mb-2">Search</p>
           <h1 className="display mb-5 text-[34px]">Search everything</h1>

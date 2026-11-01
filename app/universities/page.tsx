@@ -12,8 +12,9 @@ export default function UniversitiesPage() {
     <>
       <PageHeader
         eyebrow="Universities"
-        title="Find universities that fit you"
-        description={`${universities.length} universities across ${countries} countries — from the US and UK to Uzbekistan and Central Asia. Requirements are sourced and marked by how recently they were checked.`}
+        title="Find universities"
+        accent="that fit you."
+        description={`${universities.length} universities across ${countries} countries — from the US and UK to Uzbekistan and Central Asia. QS 2027 ranks, sourced requirements, and a 3D globe view.`}
       />
       <Suspense fallback={<div className="container py-8"><CardSkeletonGrid /></div>}>
         <UniversityDirectory />

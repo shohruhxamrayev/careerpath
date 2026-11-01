@@ -11,6 +11,7 @@
   }
   ::selection { @apply bg-brand-100 text-brand-900; }
   :focus-visible { @apply outline-none ring-2 ring-brand-500 ring-offset-2 ring-offset-paper; }
+  .night :focus-visible { @apply ring-mint ring-offset-night-900; }
   h1, h2, h3, h4 { @apply text-ink; letter-spacing: -0.012em; }
   @media (prefers-reduced-motion: reduce) {
     *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; scroll-behavior: auto !important; }
@@ -18,9 +19,26 @@
 }
 
 @layer components {
-  .display { @apply font-serif font-normal tracking-[-0.02em]; }
-  .eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.12em] text-ink-3; }
-  .card { @apply rounded-md border border-line bg-surface shadow-card; }
+  .display { @apply font-display font-semibold tracking-[-0.035em]; font-variation-settings: "opsz" 96; }
+  .accent-serif { @apply font-serif font-normal italic tracking-[-0.01em]; }
+  .text-gradient { background: linear-gradient(100deg, #93F3CB 0%, #5EEAB0 35%, #8EA8FF 100%); -webkit-background-clip: text; background-clip: text; color: transparent; }
+  .night { @apply bg-night-900 text-night-100; color-scheme: dark; }
+  .night h1, .night h2, .night h3, .night h4 { @apply text-white; }
+  .night-band { @apply night relative overflow-hidden border-b border-white/[0.06];
+    background-image: radial-gradient(ellipse 55% 90% at 0% 0%, rgba(94,234,176,0.11), transparent 70%), radial-gradient(ellipse 45% 80% at 100% 0%, rgba(142,168,255,0.09), transparent 70%); }
+  .night .text-ink-2 { @apply text-night-200; }
+  .night .text-ink-3 { @apply text-night-300; }
+  .night .text-ink-4 { @apply text-night-400; }
+  .night .hover\:text-ink:hover { @apply text-white; }
+  .night .hover\:bg-paper:hover { background-color: rgba(255,255,255,0.06); }
+  .night-card { @apply rounded-xl border border-white/[0.08] bg-white/[0.03] backdrop-blur-sm; }
+  .night-grid { background-image: linear-gradient(rgba(255,255,255,0.045) 1px, transparent 1px), linear-gradient(90deg, rgba(255,255,255,0.045) 1px, transparent 1px); background-size: 56px 56px; }
+  .glow-mint { box-shadow: 0 0 0 1px rgba(94,234,176,0.25), 0 10px 40px -10px rgba(94,234,176,0.35); }
+  .noise::after { content: ""; position: absolute; inset: 0; pointer-events: none; opacity: 0.06; mix-blend-mode: overlay;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='160' height='160'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='2' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E"); }
+  .eyebrow { @apply font-mono text-[11px] uppercase tracking-[0.14em] text-ink-3; }
+  .night .eyebrow { @apply text-mint/80; }
+  .card { @apply rounded-xl border border-line bg-surface shadow-card; }
   .card-hover { @apply transition-[border-color,box-shadow,transform] duration-150 hover:border-line-strong hover:shadow-lift; }
   .input {
     @apply block w-full rounded border border-line-strong bg-surface px-3 py-2 text-[14px] text-ink placeholder:text-ink-4

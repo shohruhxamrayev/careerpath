@@ -1,192 +1,236 @@
-import { ArrowRight, Briefcase, CalendarCheck, Compass, GraduationCap, Sparkles } from "lucide-react";
+import { ArrowRight, BadgeCheck, Bot, Briefcase, CalendarCheck, Compass, Globe2, GraduationCap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import { CareerConstellation } from "@/components/home/CareerConstellation";
+import { HeroGlobe } from "@/components/home/HeroGlobe";
+import { StoryScroll, type StoryData } from "@/components/home/StoryScroll";
 import { HomeCTA } from "@/components/HomeCTA";
-import { Badge } from "@/components/ui";
 import { careers } from "@/lib/data/careers";
 import { EXAMPLE_PROFILE } from "@/lib/data/example";
-import { opportunities } from "@/lib/data/opportunities";
+import { getOpportunity, opportunities } from "@/lib/data/opportunities";
+import { skills } from "@/lib/data/skills";
+import { OPPORTUNITY_TYPE_PLURAL, OPPORTUNITY_TYPES } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
 import { buildRecommendations } from "@/lib/matching/recommend";
-
-const FEATURES = [
-  { icon: GraduationCap, title: "Discover universities", body: "Programmes, tuition, aid, English and testing requirements — each with its source and how recently it was checked.", href: "/universities" },
-  { icon: Compass, title: "Find opportunities", body: "Scholarships, competitions, internships, fellowships, exchanges and more, with official links only.", href: "/opportunities" },
-  { icon: Briefcase, title: "Explore careers", body: "What each career involves, the skills it needs, and the student opportunities that lead into it.", href: "/careers" },
-  { icon: Sparkles, title: "Get personalised matches", body: "A rule-based engine compares your profile with published requirements and explains every match.", href: "/for-you" },
-  { icon: CalendarCheck, title: "Plan your applications", body: "Track status, deadlines and tasks across every application in one calm, organised planner.", href: "/planner" },
-];
-
-const STEPS = [
-  ["Create profile", "Education, tests, skills, activities, interests, goals and funding needs."],
-  ["Get matched", "Eligibility is checked rule by rule; fit is scored and explained."],
-  ["Discover opportunities", "Universities, scholarships and careers ranked for you."],
-  ["Plan", "Save, add confirmed deadlines and break work into tasks."],
-  ["Apply", "Go straight to official application pages."],
-];
 
 export default function Home() {
   const recs = buildRecommendations(EXAMPLE_PROFILE);
   const countries = new Set(universities.map((u) => u.country)).size;
+  const verified =
+    universities.reduce((n, u) => n + [u.english.source, u.aid.source, u.testing.source, u.tuition.source].filter((s) => s.status === "verified").length + (u.qsRank ? 1 : 0), 0) +
+    opportunities.filter((o) => o.source.status === "verified").length;
+
+  const points = universities
+    .filter((u) => u.geo)
+    .map((u) => ({
+      id: u.slug,
+      label: u.shortName ?? u.name,
+      sub: `${u.city}, ${u.country}${u.qsRank ? ` · QS #${u.qsRank}` : ""}`,
+      lat: u.geo![0],
+      lng: u.geo![1],
+      weight: u.qsRank ? Math.max(0.35, 1 - u.qsRank / 140) : 0.3,
+    }));
+  const arcTo = recs.universities.slice(0, 6).map((r) => r.item.slug);
+  const topUni = recs.universities[0];
+  const topSch = recs.scholarships[0];
+  const official = getOpportunity("jj-wbgsp")!;
+
+  const story: StoryData = {
+    uni: { name: topUni.item.name, score: topUni.match.score, checks: topUni.match.checks.filter((c) => c.status === "pass").slice(0, 4).map((c) => c.label) },
+    recs: [
+      { title: topSch.item.title, kind: "Scholarship", score: topSch.match.score },
+      { title: recs.universities[1].item.name, kind: "University", score: recs.universities[1].match.score },
+      { title: (recs.competitions[0] ?? recs.other[0]).item.title, kind: "Competition", score: (recs.competitions[0] ?? recs.other[0]).match.score },
+      { title: recs.careers[0].item.title, kind: "Career", score: recs.careers[0].match.score },
+    ],
+    scholarship: { title: official.title, timing: official.deadline.timing, url: official.officialUrl, org: official.organization },
+  };
+
+  const typeCounts = OPPORTUNITY_TYPES.map((t) => ({ t, n: opportunities.filter((o) => o.type === t).length })).filter((x) => x.n > 0).sort((a, b) => b.n - a.n);
+  const maxType = typeCounts[0].n;
+  const marquee = universities.filter((u) => u.qsRank).sort((a, b) => a.qsRank! - b.qsRank!).slice(0, 36);
 
   return (
-    <>
-      {/* Hero */}
-      <section className="relative overflow-hidden border-b border-line">
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(to_right,rgba(17,26,43,0.04)_1px,transparent_1px),linear-gradient(to_bottom,rgba(17,26,43,0.04)_1px,transparent_1px)] bg-[size:48px_48px] [mask-image:radial-gradient(ellipse_70%_60%_at_50%_0%,black,transparent)]" aria-hidden />
-        <div className="container relative grid gap-12 py-16 sm:py-20 lg:grid-cols-[1.05fr_1fr] lg:items-center lg:py-24">
-          <div className="max-w-xl">
-            <p className="eyebrow mb-5">Education · Opportunities · Careers</p>
-            <h1 className="display text-[44px] leading-[1.02] sm:text-[58px] lg:text-[64px]">Find the opportunities that fit your future.</h1>
-            <p className="mt-6 text-[17px] leading-relaxed text-ink-3">
+    <div className="night">
+      {/* ───────── Hero ───────── */}
+      <section className="noise relative overflow-hidden">
+        <div className="night-grid pointer-events-none absolute inset-0 [mask-image:radial-gradient(ellipse_70%_60%_at_50%_30%,black,transparent)]" aria-hidden />
+        <div className="pointer-events-none absolute -left-40 top-0 h-[560px] w-[760px] rounded-full bg-mint/[0.09] blur-[130px]" aria-hidden />
+        <div className="pointer-events-none absolute -right-40 top-40 h-[480px] w-[640px] rounded-full bg-peri/[0.09] blur-[130px]" aria-hidden />
+        <div className="container relative grid items-center gap-6 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:gap-4 lg:pb-20 lg:pt-20">
+          <div className="relative z-10 max-w-[620px]">
+            <Link href="/universities" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
+              <span className="rounded-full bg-mint px-2 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-night-900">New</span>
+              QS 2027 ranks · {universities.length} universities on a live globe
+              <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
+            </Link>
+            <h1 className="display mt-6 text-[48px] leading-[0.98] sm:text-[68px] lg:text-[78px]">
+              Find the opportunities that fit your <span className="accent-serif text-gradient pr-1">future.</span>
+            </h1>
+            <p className="mt-6 max-w-[520px] text-[17px] leading-relaxed text-night-300">
               Discover universities, scholarships, competitions, internships, and career paths matched to your goals, education, skills, and interests.
             </p>
             <HomeCTA />
-            <p className="mt-6 text-[12.5px] text-ink-4">Free to use. Matches are informational and never predict admission.</p>
+            <dl className="mt-10 grid max-w-[520px] grid-cols-3 gap-4 border-t border-white/[0.08] pt-6">
+              {[
+                [universities.length, "universities"],
+                [opportunities.length, "opportunities"],
+                [countries, "countries"],
+              ].map(([n, l]) => (
+                <div key={String(l)}>
+                  <dt className="sr-only">{l}</dt>
+                  <dd className="display text-[34px] leading-none text-white">{n}</dd>
+                  <dd className="mt-1.5 text-[12.5px] text-night-300">{l}</dd>
+                </div>
+              ))}
+            </dl>
           </div>
-
-          {/* Dashboard preview — generated by the real matching engine for an example profile */}
-          <div className="relative">
-            <div className="card overflow-hidden shadow-pop" aria-label="Preview of a personalised dashboard for an example profile">
-              <div className="flex items-center justify-between border-b border-line bg-paper px-4 py-2.5">
-                <div className="flex gap-1.5" aria-hidden>
-                  <span className="h-2.5 w-2.5 rounded-full bg-line-strong" /><span className="h-2.5 w-2.5 rounded-full bg-line-strong" /><span className="h-2.5 w-2.5 rounded-full bg-line-strong" />
-                </div>
-                <Badge tone="outline">Example profile preview</Badge>
-              </div>
-              <div className="p-5">
-                <p className="eyebrow">For you</p>
-                <p className="mt-1 text-[15px] font-semibold">Undergraduate Business student · IELTS 7.5 · needs full funding</p>
-                <div className="mt-4 space-y-2.5">
-                  {[recs.scholarships[0], recs.scholarships[1], recs.universities[0]].filter(Boolean).map((r) => {
-                    const isUni = "levels" in r.item && "admissionsUrl" in r.item;
-                    const title = isUni ? (r.item as { name: string }).name : (r.item as { title: string }).title;
-                    return (
-                      <div key={title} className="rounded border border-line p-3">
-                        <div className="flex items-start justify-between gap-3">
-                          <p className="text-[13.5px] font-medium">{title}</p>
-                          <span className="shrink-0 rounded bg-brand-50 px-1.5 py-0.5 font-mono text-[11px] font-medium text-brand-700">{r.match.score}% match</span>
-                        </div>
-                        <p className="mt-1 line-clamp-2 text-[12px] text-ink-3">{r.match.reason}</p>
-                      </div>
-                    );
-                  })}
-                </div>
-                <div className="mt-4 grid grid-cols-2 gap-2.5">
-                  {recs.careers.slice(0, 2).map((c) => (
-                    <div key={c.item.slug} className="rounded border border-line bg-paper p-3">
-                      <p className="text-[12.5px] font-medium">{c.item.title}</p>
-                      <p className="font-mono text-[11px] text-ink-3">{c.match.score}% career match</p>
-                    </div>
-                  ))}
-                </div>
-              </div>
-            </div>
-            <div className="absolute -bottom-5 -left-4 hidden rounded-md border border-line bg-surface px-4 py-3 shadow-lift sm:block">
-              <p className="text-[11px] text-ink-3">Eligibility check</p>
-              <p className="flex items-center gap-1.5 text-[13px] font-medium"><span className="h-1.5 w-1.5 rounded-full bg-ok" /> IELTS 7.5 meets IELTS 7.0 requirement</p>
-            </div>
-          </div>
+          <HeroGlobe points={points} arcTo={arcTo} highlights={{ uni: topUni.item.name, uniScore: topUni.match.score, scholarship: topSch.item.title }} />
         </div>
       </section>
 
-      {/* Real dataset numbers */}
-      <section className="border-b border-line bg-surface">
-        <dl className="container grid grid-cols-2 gap-6 py-8 md:grid-cols-4">
-          {[
-            [universities.length, "universities with sourced requirements"],
-            [countries, "countries, including Uzbekistan & Central Asia"],
-            [opportunities.length, "scholarships, competitions & programmes"],
-            [careers.length, "career paths with skills & next steps"],
-          ].map(([n, l]) => (
-            <div key={String(l)}>
-              <dt className="sr-only">{l}</dt>
-              <dd className="font-serif text-[36px] leading-none">{n}</dd>
-              <dd className="mt-1.5 text-[13px] text-ink-3">{l}</dd>
-            </div>
-          ))}
-        </dl>
-      </section>
-
-      {/* Features */}
-      <section className="container py-20">
-        <div className="max-w-2xl">
-          <p className="eyebrow mb-3">One platform</p>
-          <h2 className="display text-[36px] leading-tight sm:text-[42px]">A student advisor, not just a database</h2>
-          <p className="mt-4 text-[16px] text-ink-3">CareerPath answers one question: based on who I am, what should I pursue next?</p>
-        </div>
-        <div className="mt-12 grid gap-px overflow-hidden rounded-md border border-line bg-line sm:grid-cols-2 lg:grid-cols-3">
-          {FEATURES.map((f, i) => (
-            <Link key={f.title} href={f.href} className={`group bg-surface p-6 transition-colors hover:bg-paper ${i === 4 ? "sm:col-span-2 lg:col-span-1" : ""}`}>
-              <div className="flex h-9 w-9 items-center justify-center rounded border border-line bg-paper text-brand-700"><f.icon className="h-[18px] w-[18px]" /></div>
-              <h3 className="mt-5 text-[16px] font-semibold">{f.title}</h3>
-              <p className="mt-2 text-[14px] leading-relaxed text-ink-3">{f.body}</p>
-              <span className="mt-4 inline-flex items-center gap-1 text-[13px] font-medium text-brand-700">Explore <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" /></span>
+      {/* ───────── Marquee ───────── */}
+      <section className="relative overflow-hidden border-y border-white/[0.06] bg-night-850 py-5" aria-label="Universities in the dataset">
+        <div className="pointer-events-none absolute inset-y-0 left-0 z-10 w-24 bg-gradient-to-r from-night-850 to-transparent" aria-hidden />
+        <div className="pointer-events-none absolute inset-y-0 right-0 z-10 w-24 bg-gradient-to-l from-night-850 to-transparent" aria-hidden />
+        <div className="flex w-max animate-marquee gap-10 hover:[animation-play-state:paused]">
+          {[...marquee, ...marquee].map((u, i) => (
+            <Link key={i} href={`/universities/${u.slug}`} tabIndex={i >= marquee.length ? -1 : 0} aria-hidden={i >= marquee.length ? true : undefined} className="flex items-center gap-2.5 whitespace-nowrap text-[15px] text-night-300 transition-colors hover:text-white">
+              <span className="font-mono text-[11px] text-mint/70">#{u.qsRank}</span>
+              {u.shortName ?? u.name}
             </Link>
           ))}
-          <div className="hidden bg-brand-800 p-6 text-brand-50 lg:block">
-            <p className="eyebrow text-brand-200">Our approach</p>
-            <p className="mt-3 font-serif text-[22px] leading-snug text-white">Eligibility comes from published rules. Explanations are in plain language. Decisions stay yours.</p>
+        </div>
+      </section>
+
+      {/* ───────── Story ───────── */}
+      <section className="relative">
+        <div className="container py-20 sm:py-28">
+          <div className="mb-12 max-w-2xl lg:mb-4">
+            <p className="eyebrow mb-3">How it works</p>
+            <h2 className="display text-[40px] leading-[1.02] sm:text-[56px]">
+              From one profile to <span className="accent-serif text-gradient">every application.</span>
+            </h2>
           </div>
+          <StoryScroll data={story} />
         </div>
       </section>
 
-      {/* How it works */}
-      <section className="border-y border-line bg-surface">
-        <div className="container py-20">
-          <p className="eyebrow mb-3">How it works</p>
-          <h2 className="display text-[36px] leading-tight sm:text-[42px]">From profile to application</h2>
-          <ol className="mt-12 grid gap-8 md:grid-cols-5 md:gap-4">
-            {STEPS.map(([t, b], i) => (
-              <li key={t} className="relative">
-                <div className="flex items-center gap-3">
-                  <span className="flex h-8 w-8 items-center justify-center rounded-full border border-brand-200 bg-brand-50 font-mono text-[13px] text-brand-700">{i + 1}</span>
-                  {i < STEPS.length - 1 && <span className="hidden h-px flex-1 bg-line-strong md:block" aria-hidden />}
-                </div>
-                <h3 className="mt-4 text-[15px] font-semibold">{t}</h3>
-                <p className="mt-1.5 text-[13.5px] leading-relaxed text-ink-3">{b}</p>
-              </li>
-            ))}
-          </ol>
-        </div>
-      </section>
-
-      {/* Trust */}
-      <section className="container grid gap-10 py-20 lg:grid-cols-2 lg:items-center">
-        <div>
-          <p className="eyebrow mb-3">Built on sources, not guesses</p>
-          <h2 className="display text-[34px] leading-tight sm:text-[40px]">Every requirement shows where it came from</h2>
-          <p className="mt-4 text-[15.5px] leading-relaxed text-ink-3">
-            Time-sensitive facts carry a source, an organisation and a verification status. When something hasn&apos;t been checked for the current cycle, we say so — and send you to the official page.
-          </p>
-          <Link href="/methodology" className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-brand-700 hover:underline">How matching and data work <ArrowRight className="h-4 w-4" /></Link>
-        </div>
-        <div className="card divide-y divide-line">
-          <p className="px-4 py-2.5 text-[12px] text-ink-3">Example of how facts are labelled</p>
-          {[
-            ["English proficiency", "About IELTS 7.0 / TOEFL 90", "Indicative — confirm", "info"],
-            ["Ranking", "#1 in QS World University Rankings 2027", "Verified", "ok"],
-            ["Bachelor's application", "Typically by 30 April", "Not yet verified", "warn"],
-          ].map(([l, v, s, t]) => (
-            <div key={l} className="flex flex-col gap-2 p-4 sm:flex-row sm:items-center sm:justify-between">
-              <div>
-                <p className="text-[12.5px] text-ink-3">{l}</p>
-                <p className="text-[14px]">{v}</p>
+      {/* ───────── Bento (light) ───────── */}
+      <section className="relative bg-paper text-ink [color-scheme:light]">
+        <div className="container py-20 sm:py-28">
+          <div className="max-w-2xl">
+            <p className="eyebrow mb-3 !text-brand-600">Everything in one place</p>
+            <h2 className="display text-[40px] leading-[1.02] !text-ink sm:text-[54px]">
+              A student advisor, <span className="accent-serif text-brand-600">not just a database.</span>
+            </h2>
+          </div>
+          <div className="mt-12 grid auto-rows-[minmax(200px,auto)] gap-4 md:grid-cols-6">
+            <Link href="/universities" className="group card card-hover relative overflow-hidden p-6 md:col-span-4 md:row-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><GraduationCap className="h-5 w-5" /><span className="eyebrow !text-brand-600">Universities</span></div>
+              <h3 className="display mt-3 text-[30px] leading-tight !text-ink">{universities.length} universities. {countries} countries. One globe.</h3>
+              <p className="mt-2 max-w-md text-[14.5px] text-ink-3">Requirements, tuition, aid and typical deadlines — each tagged with its official source and verification status. Explore them on an interactive 3D globe.</p>
+              <div className="relative mt-6 grid grid-cols-2 gap-2 sm:grid-cols-4">
+                {["United States", "United Kingdom", "Germany", "South Korea", "Uzbekistan", "Australia", "Netherlands", "Kazakhstan"].map((c) => (
+                  <div key={c} className="rounded-lg border border-line bg-paper px-3 py-2">
+                    <p className="font-mono text-[18px] text-ink">{universities.filter((u) => u.country === c).length}</p>
+                    <p className="truncate text-[11.5px] text-ink-3">{c}</p>
+                  </div>
+                ))}
               </div>
-              <Badge tone={t as "ok" | "info" | "warn"}>{s}</Badge>
-            </div>
-          ))}
+              <span className="relative mt-6 inline-flex items-center gap-1 text-[13.5px] font-medium text-brand-700">Explore universities <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
+              <Globe2 className="pointer-events-none absolute -bottom-16 -right-16 h-64 w-64 text-brand-100" strokeWidth={0.6} aria-hidden />
+            </Link>
+            <Link href="/opportunities" className="group card card-hover p-6 md:col-span-2 md:row-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><Compass className="h-5 w-5" /><span className="eyebrow !text-brand-600">Opportunities</span></div>
+              <h3 className="display mt-3 text-[26px] leading-tight !text-ink">{opportunities.length} programmes</h3>
+              <ul className="mt-5 space-y-2.5">
+                {typeCounts.slice(0, 7).map(({ t, n }) => (
+                  <li key={t}>
+                    <div className="flex justify-between text-[12.5px]"><span className="text-ink-2">{OPPORTUNITY_TYPE_PLURAL[t]}</span><span className="font-mono text-ink-3">{n}</span></div>
+                    <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-line/70"><div className="h-full rounded-full bg-gradient-to-r from-brand-500 to-mint-600" style={{ width: `${(n / maxType) * 100}%` }} /></div>
+                  </li>
+                ))}
+              </ul>
+            </Link>
+            <Link href="/careers" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><Briefcase className="h-5 w-5" /><span className="eyebrow !text-brand-600">Careers</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">{careers.length} career paths · {skills.length} skills</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">What the job is, the skills it needs, and the opportunities that lead into it.</p>
+            </Link>
+            <Link href="/planner" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><CalendarCheck className="h-5 w-5" /><span className="eyebrow !text-brand-600">Planner</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">Every deadline, task and status</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">Overview, applications, tasks and a calendar — all in one place.</p>
+            </Link>
+            <Link href="/assistant" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><Bot className="h-5 w-5" /><span className="eyebrow !text-brand-600">Path Assistant</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">Ask anything about your plan</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">“What scholarships am I eligible for?” — answered from verified data.</p>
+            </Link>
+          </div>
         </div>
       </section>
 
-      <section className="border-t border-line bg-brand-800">
-        <div className="container flex flex-col items-start gap-6 py-16 md:flex-row md:items-center md:justify-between">
-          <div>
-            <h2 className="display text-[34px] text-white">Find your path. Build your future.</h2>
-            <p className="mt-2 text-[15px] text-brand-100">One profile. Every opportunity that fits it.</p>
+      {/* ───────── Constellation ───────── */}
+      <section className="noise relative overflow-hidden">
+        <div className="pointer-events-none absolute left-1/2 top-1/2 h-[600px] w-[900px] -translate-x-1/2 -translate-y-1/2 rounded-full bg-peri/[0.07] blur-[140px]" aria-hidden />
+        <div className="container relative grid items-center gap-10 py-20 sm:py-28 lg:grid-cols-[0.9fr_1.1fr]">
+          <div className="max-w-lg">
+            <p className="eyebrow mb-3">Career constellation</p>
+            <h2 className="display text-[40px] leading-[1.02] sm:text-[52px]">
+              See how careers <span className="accent-serif text-gradient">connect.</span>
+            </h2>
+            <p className="mt-5 text-[16px] leading-relaxed text-night-300">
+              {careers.length} careers orbit the skills that link them. Hover a career to light up what it needs; click to open its full guide. When you&apos;re signed in, every node shows your Career Match.
+            </p>
+            <Link href="/careers" className="mt-8 inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">Explore all careers <ArrowRight className="h-4 w-4" /></Link>
           </div>
-          <HomeCTA inverted />
+          <div className="relative h-[440px] sm:h-[520px]">
+            <CareerConstellation className="h-full w-full" />
+          </div>
         </div>
       </section>
-    </>
+
+      {/* ───────── Trust ───────── */}
+      <section className="border-t border-white/[0.06] bg-night-850">
+        <div className="container grid gap-10 py-20 lg:grid-cols-2 lg:items-center">
+          <div>
+            <p className="eyebrow mb-3">Built on sources, not guesses</p>
+            <h2 className="display text-[36px] leading-[1.05] sm:text-[46px]">Every fact shows where it came from.</h2>
+            <p className="mt-4 max-w-lg text-[15.5px] leading-relaxed text-night-300">
+              {verified} facts were checked against official pages in November 2026. Everything else is clearly labelled — and every application link goes to the real university or programme.
+            </p>
+            <Link href="/methodology" className="mt-6 inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">How matching and data work <ArrowRight className="h-4 w-4" /></Link>
+          </div>
+          <div className="night-card divide-y divide-white/[0.07]">
+            {([
+              [BadgeCheck, "Verified", "Read on the official page this cycle, with the date", "text-mint"],
+              [ShieldCheck, "Indicative — confirm", "Reliable general guidance; exact figures vary by programme", "text-peri"],
+              [CalendarCheck, "Not yet verified", "Typical pattern from past cycles — always confirm", "text-sun"],
+            ] as const).map(([I, t, d, c]) => (
+              <div key={t} className="flex items-start gap-4 p-5">
+                <I className={`mt-0.5 h-5 w-5 shrink-0 ${c}`} />
+                <div>
+                  <p className="text-[15px] font-semibold text-white">{t}</p>
+                  <p className="mt-0.5 text-[13.5px] text-night-300">{d}</p>
+                </div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* ───────── CTA ───────── */}
+      <section className="noise relative overflow-hidden border-t border-white/[0.06]">
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_120%,rgba(94,234,176,0.18),transparent)]" aria-hidden />
+        <div className="container relative flex flex-col items-center py-24 text-center">
+          <h2 className="display max-w-3xl text-[44px] leading-[1] sm:text-[64px]">
+            Find your path. <span className="accent-serif text-gradient">Build your future.</span>
+          </h2>
+          <p className="mt-5 max-w-md text-[16px] text-night-300">One profile. Every opportunity that fits it. Free to use.</p>
+          <div className="flex justify-center"><HomeCTA /></div>
+        </div>
+      </section>
+    </div>
   );
 }

@@ -40,9 +40,9 @@ export default function OpportunityPage({ params }: { params: { slug: string } }
 
   return (
     <>
-      <div className="border-b border-line bg-surface">
+      <div className="night-band">
         <div className="container py-8">
-          <Link href="/opportunities" className="inline-flex items-center gap-1.5 text-[13px] text-ink-3 hover:text-ink">
+          <Link href="/opportunities" className="inline-flex items-center gap-1.5 text-[13px] text-night-300 hover:text-white">
             <ArrowLeft className="h-3.5 w-3.5" /> All opportunities
           </Link>
           <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
@@ -58,7 +58,7 @@ export default function OpportunityPage({ params }: { params: { slug: string } }
             <div className="flex flex-wrap gap-2">
               <SaveButton kind="opportunity" slug={o.slug} title={o.title} variant="button" />
               <AddToPlannerButton kind="opportunity" slug={o.slug} title={o.title} subtitle={o.organization} deadlines={[o.deadline]} />
-              <ButtonLink href={o.officialUrl} external variant="secondary">
+              <ButtonLink href={o.officialUrl} external variant="nightOutline">
                 Official website <ExternalLink className="h-3.5 w-3.5" />
               </ButtonLink>
             </div>
