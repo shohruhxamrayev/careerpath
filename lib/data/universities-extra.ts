@@ -37,7 +37,7 @@ interface Spec {
   platform?: University["applicationPlatform"];
 }
 
-function U(x: Spec): University {
+export function U(x: Spec): University {
   const org = x.short ? `${x.short} — official site` : `${x.name} — official site`;
   const s = (url: string, verified?: boolean, fallback: "indicative" | "unverified" = "unverified") =>
     verified ? { org, url, status: "verified" as const, lastVerified: VERIFIED } : src(org, url, fallback);
@@ -71,14 +71,14 @@ function U(x: Spec): University {
   };
 }
 
-const us = (url: string, early = "Early Action / Early Decision") => [
+export const us = (url: string, early = "Early Action / Early Decision") => [
   deadline(early, "Typically 1 November", [11], src("Official admissions", url, "indicative")),
   deadline("Regular Decision", "Typically early January", [1], src("Official admissions", url, "indicative")),
 ];
-const uk = (url: string) => [deadline("UCAS equal-consideration date", "Typically late January", [1], src("UCAS / official admissions", url, "indicative"))];
-const au = (url: string) => [deadline("Main intakes", "Two main intakes (around February and July); applications usually open months ahead", [9, 10, 11, 4, 5], src("Official admissions", url, "unverified"))];
+export const uk = (url: string) => [deadline("UCAS equal-consideration date", "Typically late January", [1], src("UCAS / official admissions", url, "indicative"))];
+export const au = (url: string) => [deadline("Main intakes", "Two main intakes (around February and July); applications usually open months ahead", [9, 10, 11, 4, 5], src("Official admissions", url, "unverified"))];
 
-const STEM: Field[] = ["engineering", "computer-science", "mathematics", "natural-sciences", "data-science"];
+export const STEM: Field[] = ["engineering", "computer-science", "mathematics", "natural-sciences", "data-science"];
 
 export const extraUniversities: University[] = [
   // ───────── United States ─────────

@@ -47,3 +47,20 @@ Facts below were read from official pages on 2026-11-01 and are stored as `verif
 - Czech Government Scholarships (developing countries) — eligible: Bosnia & Herzegovina, Georgia, Ukraine, Belarus (democratic forces), Ethiopia, Gabon, Mauritania, Zambia, Bangladesh, Cambodia, Palestine, Guatemala, Honduras. Master's/PhD in English or Czech. https://msmt.gov.cz/en/scholarships/government-scholarships-developing-countries
 
 Note: TOEFL iBT moved to a 1–6 band scale for tests from January 2026; many universities list both.
+
+## Second expansion (2026-11-02)
+- QS 2027 positions for 41 added universities read from https://www.topuniversities.com/qs-top-uni-wur (top-200 list).
+- Columbia — meets 100% of demonstrated need for all admitted first-years regardless of citizenship. https://undergrad.admissions.columbia.edu/apply/international/aid
+- Brown — meets full demonstrated need for admitted students who apply for aid; need-blind for international students from the Class of 2029. https://admission.brown.edu/international/financial-aid
+- Dartmouth — need-blind and meets full need of all admitted students. https://admissions.dartmouth.edu/glossary-term/international-students
+- JDS Uzbekistan — 2-year English-taught master's in Japan, 2027–2029 intake; age 25–40 on 1 April 2027; 461 fellows to date; 3-year return-to-work obligation. https://jds-scholarship.org/country/uzbekistan/
+- KAUST Fellowship — tuition/bench fees up to US$35,000/yr; stipend US$20,000 (MS) / US$25,000–30,000 (PhD); base accommodation. https://admissions.kaust.edu.sa/fees-funding
+- MBZUAI — scholarships may cover tuition and cost of attendance; some include a stipend. https://mbzuai.ac.ae/admissions-aid
+- El-Yurt Umidi 2026/27 — 167 bachelor's and 232 master's quotas; age and IELTS rules per call (secondary source: ApplyBoard; marked indicative).
+
+## Advisor guides (lib/ai/knowledge.ts)
+- UCAS personal statement: three questions, min 350 characters each, 4,000 total. https://www.ucas.com/applying/applying-to-university/writing-your-personal-statement/how-to-write-your-personal-statement
+- UK Student visa living funds: £1,529/month London, £1,171/month elsewhere, up to 9 months. https://www.gov.uk/student-visa/money
+- UK Graduate visa: 18 months if applying on/after 1 January 2027. https://www.gov.uk/graduate-visa
+- Germany blocked account 2026: €992/month (€11,904/year). Secondary sources (Expatrio, germany-visa.org).
+- US STEM OPT: 24-month extension. https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-extension-for-stem-students-stem-opt

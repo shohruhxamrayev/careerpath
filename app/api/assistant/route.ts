@@ -1,74 +1,175 @@
 import { NextResponse } from "next/server";
+import { AI_TOOLS, DATASET_SUMMARY, runTool, TOOL_LABELS } from "@/lib/ai/server-tools";
+import { normalizeProfile } from "@/lib/matching/profile";
+import type { StudentProfile } from "@/lib/types";
 
 /*
- * Path Assistant API.
- * - The API key is read server-side only and never sent to the browser.
- * - If no key is configured or the upstream call fails, the client uses its rule-based fallback.
- * - Core eligibility is computed by the rule-based engine and passed in as context;
- *   the model explains and prioritises, it does not decide eligibility.
+ * Path Assistant API — AI advisor with tool use over CareerPath's dataset.
+ * - The API key is server-side only.
+ * - Streams NDJSON events: {t:"step",label} · {t:"delta",text} · {t:"done"} · {t:"fallback"}.
+ * - If no key is configured or anything fails before text is produced, the client uses the offline advisor.
+ * - Eligibility and Profile Match come from the rule-based engine via tools; the model explains them.
  */
 
 export const dynamic = "force-dynamic";
+export const maxDuration = 60;
 
-const MAX_MESSAGES = 12;
-const MAX_CHARS = 2000;
+const MAX_MESSAGES = 16;
+const MAX_CHARS = 3000;
+const MAX_TOOL_ROUNDS = 6;
 
-const SYSTEM = `You are Path Assistant, the advisor inside CareerPath — an education and career planning platform for students.
+function systemPrompt(profileSummary: string) {
+  return `You are **Path Assistant**, the senior education and career advisor inside CareerPath — a planning platform used mainly by students from Uzbekistan and Central Asia applying to universities, scholarships, competitions and internships worldwide.
 
-Rules:
-- Use the CONTEXT JSON for anything about specific universities, scholarships, requirements, deadlines and match scores. Do not invent requirements, deadlines, figures or URLs. If something isn't in the context, say you don't have verified data and point the student to the official site.
-- Eligibility and Profile Match scores come from CareerPath's rule-based engine. Explain them; never recalculate or contradict them.
-- Never describe a match as a chance or probability of admission or selection.
-- Deadlines in the context are typical patterns from previous cycles. Always tell students to confirm exact dates on official pages.
-- Be practical and structured. Use short markdown: ### headings, bullet lists, **bold** for names. Link CareerPath pages using the relative URLs given in the context, e.g. [Chevening Scholarships](/opportunities/chevening-scholarships).
-- Keep answers under about 300 words unless the student asks for a detailed plan.
-- Be encouraging but honest about gaps.`;
+## How you work
+- You have tools over CareerPath's sourced dataset (${DATASET_SUMMARY()}) and a library of checked advising guides. **Use tools before answering** any question about specific universities, programmes, requirements, deadlines, costs, eligibility or the student's own options. Call several tools when useful (e.g. get_my_recommendations, then search_opportunities).
+- For personal questions ("what should I…", "am I eligible…", "what fits me"), call get_my_recommendations first.
+- For essays, tests, visas, funding, interviews, CVs, choosing countries/majors, call get_guide for the topic.
+- You may add general expert knowledge beyond the dataset (strategy, how systems work), but **never invent specific figures, deadlines, requirements or URLs**. If something isn't in tool results, say you don't have verified data and send the student to the official site.
+- Each fact has a verification status (verified / indicative / unverified). Mention when something important is indicative or unverified.
+- Deadlines are typical windows from previous cycles; tell students to confirm exact dates.
+- Profile Match and eligibility come from CareerPath's engine. Explain them; never recalculate them. **Never describe anything as a chance or probability of admission.**
+
+## Style
+- Act like an experienced, warm, direct counsellor: give a clear recommendation, the reasoning, and concrete next steps. Be honest about gaps.
+- Use markdown: short ### headings, bullet lists, **bold** names, and tables for comparisons. Link CareerPath pages with the relative URLs from tool results, e.g. [Chevening Scholarships](/opportunities/chevening-scholarships). Use official URLs only as returned by tools.
+- Default to under ~350 words; go longer only for plans, comparisons or when asked.
+- Reply in the student's language (English, Uzbek or Russian) if they write in it.
+- Stay on education, careers and student life. Politely decline unrelated or harmful requests.
+- Finish with one line exactly in this format, giving three short follow-up questions the student might ask next:
+<<FOLLOWUPS>> question one | question two | question three
+
+## Context
+Today's date: ${new Date().toISOString().slice(0, 10)}.
+${profileSummary}`;
+}
 
 export async function GET() {
   return NextResponse.json({ enabled: !!process.env.ANTHROPIC_API_KEY });
 }
 
+type Block = { type: "text"; text: string } | { type: "tool_use"; id: string; name: string; input: unknown };
+type Msg = { role: "user" | "assistant"; content: string | unknown[] };
+
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
   if (!key) return NextResponse.json({ fallback: true, reason: "not-configured" });
 
-  let body: { messages?: { role: string; content: string }[]; context?: unknown };
+  let body: { messages?: { role: string; content: string }[]; profile?: Partial<StudentProfile> | null; planner?: { title: string; status: string; deadline: string | null }[] };
   try {
     body = await req.json();
   } catch {
     return NextResponse.json({ fallback: true, reason: "bad-request" }, { status: 400 });
   }
 
-  const messages = (body.messages ?? [])
+  const history: Msg[] = (body.messages ?? [])
     .filter((m) => (m.role === "user" || m.role === "assistant") && typeof m.content === "string" && m.content.trim())
     .slice(-MAX_MESSAGES)
-    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content.slice(0, MAX_CHARS) }));
-  while (messages.length && messages[0].role !== "user") messages.shift();
-  if (!messages.length) return NextResponse.json({ fallback: true, reason: "empty" }, { status: 400 });
+    .map((m) => ({ role: m.role as "user" | "assistant", content: m.content.replace(/<<FOLLOWUPS>>.*$/s, "").slice(0, MAX_CHARS) }));
+  while (history.length && history[0].role !== "user") history.shift();
+  if (!history.length) return NextResponse.json({ fallback: true, reason: "empty" }, { status: 400 });
 
-  const context = JSON.stringify(body.context ?? {}).slice(0, 24000);
+  const profile = body.profile ? normalizeProfile(body.profile) : null;
+  const planner = (body.planner ?? []).slice(0, 30);
+  const summary = profile
+    ? `The student is signed in. Basic profile: ${JSON.stringify({ name: profile.personal.name?.split(" ")[0], country: profile.personal.country, level: profile.education.level, seeking: profile.education.seeking, field: profile.education.field, major: profile.education.major, goals: profile.goals })}. Use get_my_recommendations for matches.`
+    : "The student is not signed in (no profile). Answer generally and suggest creating a profile for personalised matches.";
+  const system = systemPrompt(summary);
+  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
-  try {
-    const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 30000);
-    const r = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      signal: ctrl.signal,
-      headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
-      body: JSON.stringify({
-        model: process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5",
-        max_tokens: 1200,
-        system: `${SYSTEM}\n\nToday's date: ${new Date().toISOString().slice(0, 10)}.\n\nCONTEXT:\n${context}`,
-        messages,
-      }),
-    });
-    clearTimeout(timer);
-    if (!r.ok) return NextResponse.json({ fallback: true, reason: "upstream" });
-    const data = (await r.json()) as { content?: { type: string; text?: string }[] };
-    const text = data.content?.filter((c) => c.type === "text").map((c) => c.text).join("\n").trim();
-    if (!text) return NextResponse.json({ fallback: true, reason: "empty-response" });
-    return NextResponse.json({ text });
-  } catch {
-    return NextResponse.json({ fallback: true, reason: "network" });
-  }
+  const enc = new TextEncoder();
+  const stream = new ReadableStream({
+    async start(controller) {
+      const send = (o: unknown) => controller.enqueue(enc.encode(JSON.stringify(o) + "\n"));
+      let produced = false;
+      try {
+        const messages: Msg[] = [...history];
+        for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
+          const ctrl = new AbortController();
+          const timer = setTimeout(() => ctrl.abort(), 45000);
+          const r = await fetch(`${process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com"}/v1/messages`, {
+            method: "POST",
+            signal: ctrl.signal,
+            headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+            body: JSON.stringify({ model, max_tokens: 2500, system, tools: AI_TOOLS, messages, stream: true }),
+          });
+          if (!r.ok || !r.body) {
+            clearTimeout(timer);
+            throw new Error(`upstream ${r.status}`);
+          }
+          const blocks: Block[] = [];
+          const json: Record<number, string> = {};
+          let stop = "";
+          const reader = r.body.getReader();
+          const dec = new TextDecoder();
+          let buf = "";
+          for (;;) {
+            const { done, value } = await reader.read();
+            if (done) break;
+            buf += dec.decode(value, { stream: true });
+            let nl: number;
+            while ((nl = buf.indexOf("\n")) >= 0) {
+              const line = buf.slice(0, nl).trim();
+              buf = buf.slice(nl + 1);
+              if (!line.startsWith("data:")) continue;
+              let ev: { type: string; index: number; content_block?: { type: string; id?: string; name?: string }; delta?: { type: string; text?: string; partial_json?: string; stop_reason?: string } };
+              try {
+                ev = JSON.parse(line.slice(5));
+              } catch {
+                continue;
+              }
+              if (ev.type === "content_block_start" && ev.content_block) {
+                if (ev.content_block.type === "text") blocks[ev.index] = { type: "text", text: "" };
+                else if (ev.content_block.type === "tool_use") {
+                  blocks[ev.index] = { type: "tool_use", id: ev.content_block.id!, name: ev.content_block.name!, input: {} };
+                  json[ev.index] = "";
+                  send({ t: "step", label: TOOL_LABELS[ev.content_block.name!] ?? "Working" });
+                }
+              } else if (ev.type === "content_block_delta" && ev.delta) {
+                if (ev.delta.type === "text_delta" && ev.delta.text) {
+                  const b = blocks[ev.index];
+                  if (b?.type === "text") b.text += ev.delta.text;
+                  produced = true;
+                  send({ t: "delta", text: ev.delta.text });
+                } else if (ev.delta.type === "input_json_delta") json[ev.index] = (json[ev.index] ?? "") + (ev.delta.partial_json ?? "");
+              } else if (ev.type === "content_block_stop") {
+                const b = blocks[ev.index];
+                if (b?.type === "tool_use") {
+                  try {
+                    b.input = json[ev.index] ? JSON.parse(json[ev.index]) : {};
+                  } catch {
+                    b.input = {};
+                  }
+                }
+              } else if (ev.type === "message_delta" && ev.delta?.stop_reason) stop = ev.delta.stop_reason;
+            }
+          }
+          clearTimeout(timer);
+          const content = blocks.filter(Boolean).filter((b) => b.type !== "text" || b.text.trim());
+          if (stop !== "tool_use") break;
+          messages.push({ role: "assistant", content });
+          const results = content
+            .filter((b): b is Extract<Block, { type: "tool_use" }> => b.type === "tool_use")
+            .map((b) => {
+              let out: unknown;
+              try {
+                out = runTool(b.name, b.input, profile, planner);
+              } catch {
+                out = { error: "Tool failed" };
+              }
+              return { type: "tool_result", tool_use_id: b.id, content: JSON.stringify(out).slice(0, 30000) };
+            });
+          messages.push({ role: "user", content: results });
+          if (produced) send({ t: "delta", text: "\n\n" });
+        }
+        send(produced ? { t: "done" } : { t: "fallback" });
+      } catch {
+        send(produced ? { t: "done", partial: true } : { t: "fallback" });
+      } finally {
+        controller.close();
+      }
+    },
+  });
+
+  return new Response(stream, { headers: { "content-type": "application/x-ndjson; charset=utf-8", "cache-control": "no-store" } });
 }

@@ -48,8 +48,10 @@ function Scene({ nodes, onSelect, highlight }: { nodes: ConstellationNode[]; onS
     if (n?.kind === "skill") careers.filter((c) => c.links?.includes(n.id)).forEach((c) => activeLinks.add(c.id));
   }
 
-  useFrame((_, dt) => {
-    if (group.current && !hover && !reduced) group.current.rotation.y += dt * 0.07;
+  useFrame(({ clock }, dt) => {
+    if (!group.current || reduced) return;
+    if (!hover) group.current.rotation.y += dt * 0.07;
+    group.current.position.y = Math.sin(clock.elapsedTime * 0.5) * 0.04;
   });
 
   return (
@@ -89,9 +91,9 @@ function Scene({ nodes, onSelect, highlight }: { nodes: ConstellationNode[]; onS
               <meshBasicMaterial color={color} transparent opacity={dim ? 0.18 : 1} />
             </mesh>
             {isCareer && (
-              <mesh scale={2.4}>
+              <mesh scale={2.8}>
                 <sphereGeometry args={[s, 16, 16]} />
-                <meshBasicMaterial color={color} transparent opacity={dim ? 0.02 : 0.1} blending={THREE.AdditiveBlending} depthWrite={false} />
+                <meshBasicMaterial color={color} transparent opacity={dim ? 0.02 : active === n.id ? 0.28 : 0.12} blending={THREE.AdditiveBlending} depthWrite={false} />
               </mesh>
             )}
             {(isCareer || active === n.id || activeLinks.has(n.id)) && (
@@ -108,6 +110,22 @@ function Scene({ nodes, onSelect, highlight }: { nodes: ConstellationNode[]; onS
         );
       })}
     </group>
+  );
+}
+
+function Dust() {
+  const geo = useMemo(() => {
+    const n = 500;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) new THREE.Vector3().randomDirection().multiplyScalar(3 + Math.random() * 5).toArray(arr, i * 3);
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+    return g;
+  }, []);
+  return (
+    <points geometry={geo}>
+      <pointsMaterial size={0.02} color="#8EA8FF" transparent opacity={0.35} sizeAttenuation depthWrite={false} />
+    </points>
   );
 }
 
@@ -128,8 +146,9 @@ export default function Constellation({ nodes, onSelect, highlight, className, i
   return (
     <div className={className} role="img" aria-label="Interactive 3D map of careers and the skills they share">
       <Canvas camera={{ position: [0, 0.4, 5.4], fov: 45 }} dpr={[1, 1.75]} gl={{ antialias: true, alpha: true }}>
+        <Dust />
         <Scene nodes={nodes} onSelect={onSelect} highlight={highlight} />
-        {interactive && <OrbitControls enablePan={false} enableZoom={false} rotateSpeed={0.5} />}
+        {interactive && <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />}
       </Canvas>
     </div>
   );

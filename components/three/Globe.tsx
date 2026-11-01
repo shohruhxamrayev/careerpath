@@ -11,7 +11,7 @@ export interface GlobePoint {
   sub?: string;
   lat: number;
   lng: number;
-  /** 0–1 emphasis (e.g. match score) — brighter and larger */
+  /** 0–1 emphasis (e.g. match score or rank) — brighter and larger */
   weight?: number;
 }
 
@@ -25,12 +25,18 @@ export interface GlobeProps {
   /** allow wheel/pinch zoom (off on pages where the globe sits inside scrolling content) */
   zoom?: boolean;
   autoRotate?: boolean;
+  /** light beams rising from the most important points */
+  beams?: boolean;
+  /** faint starfield behind the globe */
+  stars?: boolean;
   onSelect?: (id: string) => void;
   onHover?: (id: string | null) => void;
   className?: string;
 }
 
 const R = 1;
+const MINT = new THREE.Color("#5EEAB0");
+const PERI = new THREE.Color("#8EA8FF");
 
 export function toVec(lat: number, lng: number, r = R) {
   const phi = ((90 - lat) * Math.PI) / 180;
@@ -38,21 +44,47 @@ export function toVec(lat: number, lng: number, r = R) {
   return new THREE.Vector3(-r * Math.sin(phi) * Math.cos(theta), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(theta));
 }
 
-function dotTexture() {
-  const c = document.createElement("canvas");
-  c.width = c.height = 64;
-  const g = c.getContext("2d")!;
-  const grd = g.createRadialGradient(32, 32, 0, 32, 32, 32);
-  grd.addColorStop(0, "rgba(255,255,255,1)");
-  grd.addColorStop(0.45, "rgba(255,255,255,0.9)");
-  grd.addColorStop(1, "rgba(255,255,255,0)");
-  g.fillStyle = grd;
-  g.beginPath();
-  g.arc(32, 32, 32, 0, Math.PI * 2);
-  g.fill();
-  const t = new THREE.CanvasTexture(c);
-  t.colorSpace = THREE.SRGBColorSpace;
-  return t;
+// ───────────── surface: dark ocean with soft key light and fresnel rim ─────────────
+function Surface() {
+  const mat = useMemo(
+    () =>
+      new THREE.ShaderMaterial({
+        uniforms: { deep: { value: new THREE.Color("#05080D") }, mid: { value: new THREE.Color("#0E1724") }, rim: { value: new THREE.Color("#2BC492") } },
+        vertexShader: `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
+        fragmentShader: `uniform vec3 deep; uniform vec3 mid; uniform vec3 rim; varying vec3 vN; varying vec3 vV;
+          void main(){
+            float key = clamp(dot(vN, normalize(vec3(-0.45, 0.55, 0.7))), 0.0, 1.0);
+            vec3 col = mix(deep, mid, pow(key, 1.4));
+            float f = pow(1.0 - clamp(dot(vN, vV), 0.0, 1.0), 3.0);
+            col += rim * f * 0.55;
+            gl_FragColor = vec4(col, 1.0);
+          }`,
+      }),
+    [],
+  );
+  return (
+    <mesh>
+      <sphereGeometry args={[R, 96, 96]} />
+      <primitive object={mat} attach="material" />
+    </mesh>
+  );
+}
+
+function Graticule() {
+  const geo = useMemo(() => {
+    const pts: number[] = [];
+    const push = (a: THREE.Vector3, b: THREE.Vector3) => pts.push(a.x, a.y, a.z, b.x, b.y, b.z);
+    for (let lat = -60; lat <= 60; lat += 30) for (let lng = -180; lng < 180; lng += 4) push(toVec(lat, lng, 1.0015), toVec(lat, lng + 4, 1.0015));
+    for (let lng = -180; lng < 180; lng += 30) for (let lat = -84; lat < 84; lat += 4) push(toVec(lat, lng, 1.0015), toVec(lat + 4, lng, 1.0015));
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.Float32BufferAttribute(pts, 3));
+    return g;
+  }, []);
+  return (
+    <lineSegments geometry={geo}>
+      <lineBasicMaterial color="#5EEAB0" transparent opacity={0.045} depthWrite={false} />
+    </lineSegments>
+  );
 }
 
 function Atmosphere() {
@@ -63,22 +95,43 @@ function Atmosphere() {
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-        uniforms: { c: { value: new THREE.Color("#3FD6A0") } },
-        vertexShader: `varying vec3 vN; void main(){ vN = normalize(normalMatrix * normal); gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
-        fragmentShader: `uniform vec3 c; varying vec3 vN; void main(){ float i = pow(max(0.0, 0.62 - dot(vN, vec3(0.0,0.0,1.0))), 3.2); gl_FragColor = vec4(c, 1.0) * i * 0.75; }`,
+        uniforms: { c: { value: new THREE.Color("#3FD6A0") }, c2: { value: new THREE.Color("#6C8CFF") } },
+        vertexShader: `varying vec3 vN; varying float vY; void main(){ vN = normalize(normalMatrix * normal); vY = normal.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
+        fragmentShader: `uniform vec3 c; uniform vec3 c2; varying vec3 vN; varying float vY; void main(){ float i = pow(max(0.0, 0.64 - dot(vN, vec3(0.0,0.0,1.0))), 3.0); vec3 col = mix(c2, c, smoothstep(-0.6, 0.6, vY)); gl_FragColor = vec4(col, 1.0) * i * 0.8; }`,
       }),
     [],
   );
   return (
-    <mesh scale={1.12}>
+    <mesh scale={1.13}>
       <sphereGeometry args={[R, 64, 64]} />
       <primitive object={mat} attach="material" />
     </mesh>
   );
 }
 
-function Land({ tex }: { tex: THREE.Texture }) {
+// ───────────── land: dots that fade toward the limb and light up on the sunny side ─────────────
+const landVS = `uniform float size; uniform float scale; varying float vFace; varying float vKey;
+  void main(){
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vec3 n = normalize(normalMatrix * normalize(position));
+    vFace = dot(n, normalize(-mv.xyz));
+    vKey = clamp(dot(n, normalize(vec3(-0.45, 0.55, 0.7))), 0.0, 1.0);
+    gl_PointSize = size * scale / -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const landFS = `uniform vec3 dim; uniform vec3 lit; varying float vFace; varying float vKey;
+  void main(){
+    vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5) discard;
+    float a = smoothstep(0.5, 0.15, r) * smoothstep(-0.05, 0.45, vFace);
+    gl_FragColor = vec4(mix(dim, lit, vKey), a * 0.95);
+  }`;
+
+function Land() {
   const [geo, setGeo] = useState<THREE.BufferGeometry | null>(null);
+  const mat = useMemo(
+    () => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { size: { value: 0.022 }, scale: { value: 520 }, dim: { value: new THREE.Color("#2A3A4E") }, lit: { value: new THREE.Color("#8FB4D6") } }, vertexShader: landVS, fragmentShader: landFS }),
+    [],
+  );
   useEffect(() => {
     let alive = true;
     fetch("/globe-land.json")
@@ -86,7 +139,7 @@ function Land({ tex }: { tex: THREE.Texture }) {
       .then((pts: [number, number][]) => {
         if (!alive) return;
         const arr = new Float32Array(pts.length * 3);
-        pts.forEach(([lat, lng], i) => toVec(lat, lng, R * 1.001).toArray(arr, i * 3));
+        pts.forEach(([lat, lng], i) => toVec(lat, lng, R * 1.002).toArray(arr, i * 3));
         const g = new THREE.BufferGeometry();
         g.setAttribute("position", new THREE.BufferAttribute(arr, 3));
         setGeo(g);
@@ -97,34 +150,62 @@ function Land({ tex }: { tex: THREE.Texture }) {
     };
   }, []);
   if (!geo) return null;
-  return (
-    <points geometry={geo}>
-      <pointsMaterial size={0.02} map={tex} transparent alphaTest={0.05} color="#46607A" depthWrite={false} sizeAttenuation />
-    </points>
-  );
+  return <points geometry={geo} material={mat} />;
 }
 
-function Markers({ points, tex, onHover, onSelect, hovered }: { points: GlobePoint[]; tex: THREE.Texture; hovered: string | null; onHover: (id: string | null) => void; onSelect?: (id: string) => void }) {
+// ───────────── markers: glowing, size by weight, pulse on the important ones ─────────────
+const markVS = `attribute float aSize; attribute vec3 aColor; attribute float aPulse; uniform float time; uniform float scale; varying vec3 vC; varying float vFace; varying float vP;
+  void main(){
+    vec4 mv = modelViewMatrix * vec4(position, 1.0);
+    vec3 n = normalize(normalMatrix * normalize(position));
+    vFace = dot(n, normalize(-mv.xyz));
+    vC = aColor; vP = aPulse;
+    float pulse = 1.0 + aPulse * 0.25 * sin(time * 2.6 + position.x * 9.0);
+    gl_PointSize = aSize * pulse * scale / -mv.z;
+    gl_Position = projectionMatrix * mv;
+  }`;
+const markFS = `varying vec3 vC; varying float vFace; varying float vP;
+  void main(){
+    vec2 d = gl_PointCoord - 0.5; float r = length(d); if (r > 0.5) discard;
+    float core = smoothstep(0.22, 0.0, r);
+    float halo = smoothstep(0.5, 0.0, r) * 0.55;
+    float a = (core + halo) * smoothstep(-0.1, 0.3, vFace);
+    gl_FragColor = vec4(vC * (0.7 + core * 0.9), a);
+  }`;
+
+function Markers({ points, onHover, onSelect, hovered, focusId }: { points: GlobePoint[]; hovered: string | null; focusId?: string | null; onHover: (id: string | null) => void; onSelect?: (id: string) => void }) {
+  const mat = useMemo(
+    () => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, blending: THREE.AdditiveBlending, uniforms: { time: { value: 0 }, scale: { value: 520 } }, vertexShader: markVS, fragmentShader: markFS }),
+    [],
+  );
   const geo = useMemo(() => {
     const pos = new Float32Array(points.length * 3);
     const col = new Float32Array(points.length * 3);
-    const base = new THREE.Color("#5EEAB0");
-    const cool = new THREE.Color("#8EA8FF");
+    const size = new Float32Array(points.length);
+    const pulse = new Float32Array(points.length);
     points.forEach((p, i) => {
+      const w = p.weight ?? 0.6;
       toVec(p.lat, p.lng, R * 1.012).toArray(pos, i * 3);
-      const c = cool.clone().lerp(base, p.weight ?? 0.6);
-      c.toArray(col, i * 3);
+      PERI.clone().lerp(MINT, w).toArray(col, i * 3);
+      size[i] = 0.05 + w * 0.05;
+      pulse[i] = w > 0.85 ? 1 : 0;
     });
     const g = new THREE.BufferGeometry();
     g.setAttribute("position", new THREE.BufferAttribute(pos, 3));
-    g.setAttribute("color", new THREE.BufferAttribute(col, 3));
+    g.setAttribute("aColor", new THREE.BufferAttribute(col, 3));
+    g.setAttribute("aSize", new THREE.BufferAttribute(size, 1));
+    g.setAttribute("aPulse", new THREE.BufferAttribute(pulse, 1));
     return g;
   }, [points]);
-  const hp = hovered ? points.find((p) => p.id === hovered) : undefined;
+  useFrame(({ clock }) => {
+    mat.uniforms.time.value = clock.elapsedTime;
+  });
+  const hp = hovered ? points.find((p) => p.id === hovered) : focusId ? points.find((p) => p.id === focusId) : undefined;
   return (
     <group>
       <points
         geometry={geo}
+        material={mat}
         onPointerMove={(e: ThreeEvent<PointerEvent>) => {
           e.stopPropagation();
           if (e.index != null) onHover(points[e.index]?.id ?? null);
@@ -134,58 +215,126 @@ function Markers({ points, tex, onHover, onSelect, hovered }: { points: GlobePoi
           e.stopPropagation();
           if (e.index != null && onSelect) onSelect(points[e.index].id);
         }}
-      >
-        <pointsMaterial size={0.055} map={tex} vertexColors transparent alphaTest={0.05} blending={THREE.AdditiveBlending} depthWrite={false} sizeAttenuation />
-      </points>
-      {hp && (
-        <group position={toVec(hp.lat, hp.lng, R * 1.02)}>
-          <mesh>
-            <sphereGeometry args={[0.022, 16, 16]} />
-            <meshBasicMaterial color="#ffffff" />
-          </mesh>
-          <Html style={{ pointerEvents: "none" }} zIndexRange={[20, 0]}>
-            <div className="-translate-x-1/2 -translate-y-[130%] whitespace-nowrap rounded-md border border-white/15 bg-night-900/90 px-3 py-2 text-left shadow-pop backdrop-blur">
-              <div className="text-[13px] font-semibold text-white">{hp.label}</div>
-              {hp.sub && <div className="text-[11px] text-night-300">{hp.sub}</div>}
-            </div>
-          </Html>
-        </group>
-      )}
+      />
+      {hp && <Pin p={hp} label={!!hovered} />}
     </group>
   );
 }
 
-function Arc({ from, to, delay }: { from: THREE.Vector3; to: THREE.Vector3; delay: number }) {
-  const ref = useRef<{ material: { dashOffset: number } } | null>(null);
-  const pts = useMemo(() => {
-    const mid = from.clone().add(to).multiplyScalar(0.5);
-    const dist = from.distanceTo(to);
-    mid.normalize().multiplyScalar(R + 0.15 + dist * 0.35);
-    return new THREE.QuadraticBezierCurve3(from, mid, to).getPoints(48);
-  }, [from, to]);
-  useFrame((_, dt) => {
-    if (ref.current) ref.current.material.dashOffset -= dt * 0.35;
+/** Highlight for the hovered/focused point: ring + label. */
+function Pin({ p, label }: { p: GlobePoint; label: boolean }) {
+  const ring = useRef<THREE.Mesh>(null);
+  const pos = useMemo(() => toVec(p.lat, p.lng, R * 1.014), [p]);
+  const quat = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), pos.clone().normalize()), [pos]);
+  useFrame(({ clock }) => {
+    const m = ring.current;
+    if (!m) return;
+    const t = (clock.elapsedTime * 0.9) % 1;
+    m.scale.setScalar(1 + t * 2.2);
+    (m.material as THREE.MeshBasicMaterial).opacity = 0.7 * (1 - t);
   });
   return (
-    <Line
-      ref={ref as any}
-      points={pts}
-      color="#5EEAB0"
-      lineWidth={1.2}
-      transparent
-      opacity={0.75}
-      dashed
-      dashScale={6}
-      dashSize={0.5}
-      gapSize={0.35}
-      dashOffset={delay}
-    />
+    <group position={pos} quaternion={quat}>
+      <mesh>
+        <circleGeometry args={[0.016, 24]} />
+        <meshBasicMaterial color="#ffffff" />
+      </mesh>
+      <mesh ref={ring}>
+        <ringGeometry args={[0.022, 0.028, 40]} />
+        <meshBasicMaterial color="#5EEAB0" transparent opacity={0.7} depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+      {label && <Html style={{ pointerEvents: "none" }} zIndexRange={[20, 0]}>
+        <div className="-translate-x-1/2 -translate-y-[135%] whitespace-nowrap rounded-lg border border-white/15 bg-night-900/90 px-3 py-2 text-left shadow-pop backdrop-blur">
+          <div className="text-[13px] font-semibold text-white">{p.label}</div>
+          {p.sub && <div className="text-[11px] text-night-300">{p.sub}</div>}
+        </div>
+      </Html>}
+    </group>
   );
 }
 
-function Scene({ points, origin, arcTo, focusId, interactive, zoom, autoRotate, onSelect, onHover }: GlobeProps) {
+function Beams({ points }: { points: GlobePoint[] }) {
+  const top = useMemo(() => [...points].sort((a, b) => (b.weight ?? 0) - (a.weight ?? 0)).slice(0, 14), [points]);
+  return (
+    <group>
+      {top.map((p) => {
+        const w = p.weight ?? 0.5;
+        const a = toVec(p.lat, p.lng, R * 1.012);
+        const b = toVec(p.lat, p.lng, R * (1.03 + w * 0.06));
+        return <Line key={p.id} points={[a, b]} vertexColors={[[0.37, 0.92, 0.69], [0.02, 0.05, 0.08]]} lineWidth={1.2} transparent opacity={0.65} blending={THREE.AdditiveBlending} depthWrite={false} />;
+      })}
+    </group>
+  );
+}
+
+// ───────────── arcs with a travelling comet ─────────────
+function Arc({ from, to, delay }: { from: THREE.Vector3; to: THREE.Vector3; delay: number }) {
+  const comet = useRef<THREE.Mesh>(null);
+  const curve = useMemo(() => {
+    const mid = from.clone().add(to).multiplyScalar(0.5);
+    const dist = from.distanceTo(to);
+    mid.normalize().multiplyScalar(R + 0.12 + dist * 0.32);
+    return new THREE.QuadraticBezierCurve3(from, mid, to);
+  }, [from, to]);
+  const pts = useMemo(() => curve.getPoints(64), [curve]);
+  useFrame(({ clock }) => {
+    if (!comet.current) return;
+    const t = ((clock.elapsedTime * 0.28 + delay) % 1.4) / 1.4;
+    comet.current.position.copy(curve.getPoint(Math.min(t * 1.15, 1)));
+    (comet.current.material as THREE.MeshBasicMaterial).opacity = t < 0.85 ? 1 : (1 - t) * 6;
+  });
+  return (
+    <group>
+      <Line points={pts} color="#5EEAB0" lineWidth={1} transparent opacity={0.28} depthWrite={false} />
+      <mesh ref={comet}>
+        <sphereGeometry args={[0.011, 12, 12]} />
+        <meshBasicMaterial color="#C9FFE9" transparent />
+      </mesh>
+    </group>
+  );
+}
+
+function OriginPulse({ v }: { v: THREE.Vector3 }) {
+  const ring = useRef<THREE.Mesh>(null);
+  const quat = useMemo(() => new THREE.Quaternion().setFromUnitVectors(new THREE.Vector3(0, 0, 1), v.clone().normalize()), [v]);
+  useFrame(({ clock }) => {
+    const m = ring.current;
+    if (!m) return;
+    const t = (clock.elapsedTime * 0.6) % 1;
+    m.scale.setScalar(1 + t * 3);
+    (m.material as THREE.MeshBasicMaterial).opacity = 0.8 * (1 - t);
+  });
+  return (
+    <group position={v} quaternion={quat}>
+      <mesh ref={ring}>
+        <ringGeometry args={[0.02, 0.026, 40]} />
+        <meshBasicMaterial color="#FFD27A" transparent depthWrite={false} side={THREE.DoubleSide} />
+      </mesh>
+    </group>
+  );
+}
+
+function Stars() {
+  const geo = useMemo(() => {
+    const n = 900;
+    const arr = new Float32Array(n * 3);
+    for (let i = 0; i < n; i++) {
+      const v = new THREE.Vector3().randomDirection().multiplyScalar(6 + Math.random() * 6);
+      v.toArray(arr, i * 3);
+    }
+    const g = new THREE.BufferGeometry();
+    g.setAttribute("position", new THREE.BufferAttribute(arr, 3));
+    return g;
+  }, []);
+  return (
+    <points geometry={geo}>
+      <pointsMaterial size={0.018} color="#9FB2D0" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
+    </points>
+  );
+}
+
+function Scene({ points, origin, arcTo, focusId, interactive, zoom, autoRotate, beams, stars, onSelect, onHover }: GlobeProps) {
   const group = useRef<THREE.Group>(null);
-  const tex = useMemo(() => dotTexture(), []);
   const [hovered, setHovered] = useState<string | null>(null);
   const target = useRef<{ y: number; x: number } | null>(null);
   const reduced = typeof window !== "undefined" && window.matchMedia("(prefers-reduced-motion: reduce)").matches;
@@ -197,39 +346,38 @@ function Scene({ points, origin, arcTo, focusId, interactive, zoom, autoRotate, 
       return;
     }
     const v = toVec(p.lat, p.lng);
-    target.current = { y: -Math.atan2(v.x, v.z), x: (p.lat * Math.PI) / 180 * 0.55 };
+    target.current = { y: -Math.atan2(v.x, v.z), x: ((p.lat * Math.PI) / 180) * 0.55 };
   }, [focusId, points]);
 
   useFrame((_, dt) => {
     const g = group.current;
     if (!g) return;
     if (target.current) {
-      // shortest-path rotation toward the focused point
       let dy = target.current.y - g.rotation.y;
       dy = Math.atan2(Math.sin(dy), Math.cos(dy));
-      g.rotation.y += dy * Math.min(1, dt * 3);
-      g.rotation.x += (target.current.x - g.rotation.x) * Math.min(1, dt * 3);
+      g.rotation.y += dy * Math.min(1, dt * 2.6);
+      g.rotation.x += (target.current.x - g.rotation.x) * Math.min(1, dt * 2.6);
     } else if (autoRotate && !hovered && !reduced) {
-      g.rotation.y += dt * 0.08;
+      g.rotation.y += dt * 0.07;
     }
   });
 
   const originVec = origin ? toVec(origin.lat, origin.lng, R * 1.012) : null;
   const arcTargets = (arcTo ?? []).map((id) => points.find((p) => p.id === id)).filter(Boolean) as GlobePoint[];
+  const startY = origin ? -Math.atan2(toVec(origin.lat, origin.lng).x, toVec(origin.lat, origin.lng).z) : 0;
 
   return (
     <>
-      <ambientLight intensity={0.6} />
-      <group ref={group} rotation={[0.35, origin ? -Math.atan2(toVec(origin.lat, origin.lng).x, toVec(origin.lat, origin.lng).z) : 0, 0]}>
-        <mesh>
-          <sphereGeometry args={[R, 64, 64]} />
-          <meshBasicMaterial color="#0A1018" />
-        </mesh>
-        <Land tex={tex} />
+      {stars && <Stars />}
+      <group ref={group} rotation={[0.35, startY, 0]}>
+        <Surface />
+        <Graticule />
+        <Land />
+        {beams && <Beams points={points} />}
         <Markers
           points={points}
-          tex={tex}
           hovered={hovered}
+          focusId={focusId}
           onHover={(id) => {
             setHovered(id);
             onHover?.(id);
@@ -238,22 +386,25 @@ function Scene({ points, origin, arcTo, focusId, interactive, zoom, autoRotate, 
           onSelect={onSelect}
         />
         {originVec && (
-          <group position={originVec}>
-            <mesh>
-              <sphereGeometry args={[0.02, 16, 16]} />
+          <group>
+            <mesh position={originVec}>
+              <sphereGeometry args={[0.018, 16, 16]} />
               <meshBasicMaterial color="#FFD27A" />
             </mesh>
+            <OriginPulse v={originVec} />
             {origin?.label && (
-              <Html style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
-                <div className="-translate-x-1/2 translate-y-2 whitespace-nowrap rounded bg-sun px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-night-900">{origin.label}</div>
-              </Html>
+              <group position={originVec}>
+                <Html style={{ pointerEvents: "none" }} zIndexRange={[10, 0]}>
+                  <div className="-translate-x-1/2 translate-y-2 whitespace-nowrap rounded bg-sun px-1.5 py-0.5 font-mono text-[9.5px] font-semibold uppercase tracking-wider text-night-900">{origin.label}</div>
+                </Html>
+              </group>
             )}
           </group>
         )}
-        {originVec && arcTargets.map((p, i) => <Arc key={p.id} from={originVec} to={toVec(p.lat, p.lng, R * 1.012)} delay={i * 0.3} />)}
+        {originVec && arcTargets.map((p, i) => <Arc key={p.id} from={originVec} to={toVec(p.lat, p.lng, R * 1.012)} delay={i * 0.23} />)}
       </group>
       <Atmosphere />
-      {interactive && <OrbitControls enablePan={false} enableZoom={!!zoom} minDistance={1.8} maxDistance={4.2} rotateSpeed={0.5} zoomSpeed={0.6} />}
+      {interactive && <OrbitControls enablePan={false} enableZoom={!!zoom} enableDamping dampingFactor={0.08} minDistance={1.7} maxDistance={4.2} rotateSpeed={0.45} zoomSpeed={0.6} />}
     </>
   );
 }
@@ -277,7 +428,7 @@ export default function Globe(props: GlobeProps) {
   if (ok === null) return <div className={props.className} aria-hidden />;
   return (
     <div className={props.className} role="img" aria-label="Interactive globe showing universities in the CareerPath dataset">
-      <Canvas camera={{ position: [0, 0, 3.25], fov: 42 }} dpr={[1, 1.75]} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }}>
+      <Canvas camera={{ position: [0, 0, 3.25], fov: 42 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }} raycaster={{ params: { Points: { threshold: 0.025 } } as THREE.RaycasterParameters }}>
         <Scene {...props} />
       </Canvas>
     </div>

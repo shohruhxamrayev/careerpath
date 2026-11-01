@@ -131,7 +131,7 @@ function Overview({ onEdit, onAddTask, onAddApp }: { onEdit: (a: Application) =>
   }
 
   return (
-    <div className="grid gap-6 lg:grid-cols-3">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-3 [&>*]:min-w-0">
       <section className="card p-5 lg:col-span-3" aria-labelledby="progress-h">
         <div className="flex flex-wrap items-baseline justify-between gap-2">
           <h2 id="progress-h" className="text-[15px] font-semibold">Application progress</h2>
@@ -391,7 +391,7 @@ function CalendarView({ onEdit, onAddTask }: { onEdit: (a: Application) => void;
   const sel = events.get(selected) ?? [];
 
   return (
-    <div className="grid gap-6 lg:grid-cols-[1fr_320px]">
+    <div className="grid grid-cols-1 gap-6 lg:grid-cols-[1fr_320px] [&>*]:min-w-0">
       <div className="card overflow-hidden">
         <div className="flex items-center justify-between border-b border-line px-4 py-3">
           <h2 className="text-[15px] font-semibold">{cursor.toLocaleDateString("en-GB", { month: "long", year: "numeric" })}</h2>

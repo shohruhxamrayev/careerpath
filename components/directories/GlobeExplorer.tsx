@@ -69,6 +69,7 @@ export function GlobeExplorer({ rows, fromTashkent }: { rows: { u: University; m
             focusId={focus}
             interactive
             zoom
+            beams
             autoRotate={!focus}
             origin={fromTashkent ? { lat: 41.31, lng: 69.28, label: "Tashkent" } : undefined}
             arcTo={arcTo}

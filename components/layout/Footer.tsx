@@ -5,7 +5,7 @@ import { DATASET_COMPILED } from "@/lib/data/sources";
 
 const COLS = [
   { title: "Discover", links: [["Universities", "/universities"], ["Opportunities", "/opportunities"], ["Careers", "/careers"], ["Search", "/search"]] },
-  { title: "Plan", links: [["For You", "/for-you"], ["Planner", "/planner"], ["Path Assistant", "/assistant"], ["Your profile", "/profile"]] },
+  { title: "Plan", links: [["For You", "/for-you"], ["Roadmap", "/roadmap"], ["Planner", "/planner"], ["Path Assistant", "/assistant"], ["Your profile", "/profile"]] },
   { title: "About", links: [["How matching works", "/methodology"], ["Data & sources", "/methodology#data"], ["Privacy", "/methodology#privacy"]] },
 ];
 

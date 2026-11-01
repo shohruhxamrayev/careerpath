@@ -58,9 +58,9 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-40 top-40 h-[480px] w-[640px] rounded-full bg-peri/[0.09] blur-[130px]" aria-hidden />
         <div className="container relative grid items-center gap-6 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:gap-4 lg:pb-20 lg:pt-20">
           <div className="relative z-10 max-w-[620px]">
-            <Link href="/universities" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
+            <Link href="/roadmap" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
               <span className="rounded-full bg-mint px-2 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-night-900">New</span>
-              QS 2027 ranks · {universities.length} universities on a live globe
+              Roadmap — your month-by-month plan to day one
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <h1 className="display mt-6 text-[48px] leading-[0.98] sm:text-[68px] lg:text-[78px]">

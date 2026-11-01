@@ -24,10 +24,10 @@ Copy `.env.example` to `.env.local`.
 | Variable | Purpose |
 | --- | --- |
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Switches auth and storage to Supabase. Run `supabase/schema.sql` in the SQL editor first (tables + Row Level Security). |
-| `ANTHROPIC_API_KEY` | Enables AI explanations in Path Assistant. Server-side only. |
+| `ANTHROPIC_API_KEY` | Enables the AI advisor (Claude with tool use over the dataset, streamed). Server-side only. |
 | `ANTHROPIC_MODEL` | Optional model override (default `claude-sonnet-5-5`). |
 
-If the AI key is missing or a request fails, the assistant silently falls back to verified, rule-based answers. It never shows an API error.
+If the AI key is missing or a request fails, the assistant falls back to the built-in advisor (`lib/ai/advisor.ts`), which understands comparisons, filtered searches, specific universities/programmes, and 20+ advising topics (essays, tests, visas, funding). It never shows an API error.
 
 ## Routes
 
@@ -40,9 +40,10 @@ If the AI key is missing or a request fails, the assistant silently falls back t
 | `/opportunities`, `/opportunities/[slug]` | 10 opportunity types, deadline radar, filters, eligibility-only view; detail pages with rule-by-rule eligibility |
 | `/careers`, `/careers/[slug]` | Career paths with skills, routes, entry roles, resources and Career Match |
 | `/for-you` | Personalised recommendations, each with its reason, plus next steps |
+| `/roadmap` | Month-by-month plan from today to the intake: tests, essays, university and scholarship deadlines, readiness score, one-click add to planner |
 | `/planner` | Overview, applications, tasks, calendar and saved items |
 | `/search` | Categorised global search (also ⌘K / Ctrl+K anywhere) |
-| `/assistant` | Path Assistant |
+| `/assistant` | Path Advisor: streamed AI advice grounded in the dataset via tools (search/compare universities and opportunities, eligibility, deadlines, guides), with an offline advisor fallback |
 | `/methodology` | How matching, data sources and privacy work |
 
 ## Project structure
@@ -66,7 +67,7 @@ supabase/schema.sql  database schema with Row Level Security
 
 ## Dataset
 
-119 universities in 27 countries (QS World University Rankings 2027 positions where published), 101 opportunities across 10 types, 18 careers. Research log: `lib/data/research/NOTES.md`.
+161 universities in 32 countries (QS World University Rankings 2027 positions where published), 137 opportunities across 10 types, 18 careers. Research log: `lib/data/research/NOTES.md`.
 
 ## Matching
 
@@ -87,6 +88,6 @@ supabase/schema.sql  database schema with Row Level Security
 
 ## Testing performed
 
-- `tsc` and ESLint pass with no errors. The production build generates 254 pages.
+- `tsc` and ESLint pass with no errors. The production build generates 333 pages.
 - A crawler followed every internal link (434 URLs): no broken links, and no console errors besides the intentional 404 test.
-- An end-to-end browser suite of 18 journeys passed with zero console or page errors: signup validation, profile build and persistence, field validation, For You, eligibility breakdowns, filters with URL state, save and add-to-planner, planner tasks/status/calendar/saved/custom/remove, Career Match, global search and empty states, all six assistant example questions, logout/login redirect, password reset, guest redirect, and mobile (390px) layouts with the filter drawer and mobile nav. Layouts were also checked at 1280px and 820px with no horizontal overflow.
+- An end-to-end browser suite of 19 journeys passed with zero console or page errors: signup validation, profile build and persistence, field validation, For You, eligibility breakdowns, filters with URL state, save and add-to-planner, planner tasks/status/calendar/saved/custom/remove, Career Match, global search and empty states, all six assistant example questions, logout/login redirect, password reset, guest redirect, and mobile (390px) layouts with the filter drawer and mobile nav. Layouts were also checked at 1280px and 820px with no horizontal overflow.

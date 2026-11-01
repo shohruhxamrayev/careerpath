@@ -3,6 +3,7 @@ import { GEO } from "./geo";
 import { QS2027 } from "./research/qs2027";
 import { COMMON_APP, OUAC, UCAS, deadline, src } from "./sources";
 import { extraUniversities } from "./universities-extra";
+import { moreUniversities, QS2027_MORE } from "./universities-more";
 
 /*
  * University seed dataset.
@@ -1092,9 +1093,9 @@ const baseUniversities: University[] = [
  * Final dataset: hand-written records above + the researched expansion, with QS 2027 ranks
  * (verified against the published table) and coordinates for the 3D globe applied on top.
  */
-export const universities: University[] = [...baseUniversities, ...extraUniversities].map((u) => ({
+export const universities: University[] = [...baseUniversities, ...extraUniversities, ...moreUniversities].map((u) => ({
   ...u,
-  qsRank: QS2027[u.slug],
+  qsRank: QS2027[u.slug] ?? QS2027_MORE[u.slug],
   geo: u.geo ?? GEO[u.slug],
 }));
 

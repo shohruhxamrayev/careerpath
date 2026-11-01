@@ -18,6 +18,7 @@ export const NAV = [
   { href: "/opportunities", label: "Opportunities" },
   { href: "/careers", label: "Careers" },
   { href: "/for-you", label: "For You" },
+  { href: "/roadmap", label: "Roadmap" },
   { href: "/planner", label: "Planner" },
 ];
 
@@ -83,12 +84,12 @@ export function Navbar() {
           <nav aria-label="Main" className="hidden lg:block">
             <ul className="flex items-center gap-1">
               {NAV.map((n) => (
-                <li key={n.href}>
+                <li key={n.href} className={cn(n.href === "/" && "hidden xl:block")}>
                   <Link
                     href={n.href}
                     aria-current={isActive(path, n.href) ? "page" : undefined}
                     className={cn(
-                      "relative rounded px-3 py-2 text-[14px] transition-colors",
+                      "relative whitespace-nowrap rounded px-2.5 py-2 text-[14px] transition-colors",
                       isActive(path, n.href) ? "font-medium text-white" : "text-night-300 hover:text-white",
                     )}
                   >

@@ -1,5 +1,6 @@
 import type { Opportunity } from "@/lib/types";
 import { extraOpportunities } from "./opportunities-extra";
+import { moreOpportunities } from "./opportunities-more";
 import { deadline, src } from "./sources";
 
 /*
@@ -368,24 +369,27 @@ const baseOpportunities: Opportunity[] = [
     type: "scholarship",
     summary: "Uzbekistan's state programme funding citizens to study at leading foreign universities.",
     overview:
-      "The El-yurt umidi Foundation funds Uzbek citizens to study abroad at top-ranked universities and to complete internships, with an obligation to work in Uzbekistan after graduation. Programme levels and conditions are announced in each call.",
+      "The El-yurt umidi Foundation funds Uzbek citizens to study at leading foreign universities (bachelor's, master's, PhD and internships), with an obligation to work in Uzbekistan after graduating. For 2026/27 the call listed 167 bachelor's and 232 master's quotas. Priority fields include STEM, energy, agriculture and water management, transport, architecture and construction, healthcare and public administration.",
     fields: "any",
     levels: ["high-school", "undergraduate", "graduate", "masters", "phd"],
     format: "in-person",
     location: "Universities abroad",
-    hostCountries: ["United States", "United Kingdom", "Germany", "South Korea", "Japan", "Singapore", "Canada"],
-    funding: { kind: "fully-funded", summary: "Funding of study abroad as defined in each call; includes a return-and-work obligation." },
+    hostCountries: ["United States", "United Kingdom", "Germany", "South Korea", "Japan", "Singapore", "Canada", "Italy", "France", "Netherlands", "Australia"],
+    funding: { kind: "fully-funded", summary: "Tuition, living stipend, travel, health insurance and study materials; return-and-work obligation in Uzbekistan." },
     requirements: [
       { kind: "nationality", include: ["Uzbekistan"], text: "Citizen of the Republic of Uzbekistan" },
-      { kind: "english", ielts: 6, text: "Language proficiency evidence (minimums set in each call)" },
-      { kind: "other", text: "Admission to an eligible foreign university and a commitment to return and work in Uzbekistan" },
+      { kind: "age", max: 40, text: "Age limits by level: bachelor's up to 30; master's about 22–40; doctoral about 25–45 (check the current call)" },
+      { kind: "english", ielts: 6, text: "IELTS Academic 6.0+ for bachelor's; 7.0+ (or equivalent) for master's and doctoral — an unconditional offer may exempt you" },
+      { kind: "other", text: "Master's applicants need more than 1 year of work experience; doctoral more than 2 years" },
+      { kind: "other", text: "Admission (or conditional admission where allowed) to an eligible foreign university" },
     ],
     applicationSteps: [
-      "Read the current call on the foundation's website.",
-      "Prepare a university offer or application, language certificate and documents.",
-      "Pass the foundation's testing and interview stages.",
+      "Read the current call on eyuf.uz and check your university is on the eligible list.",
+      "Secure an admission letter and an IELTS (or equivalent) certificate before the window opens.",
+      "Apply online during the short application window (often about three weeks).",
+      "Pass the foundation's testing and interview stages and sign the return-to-work agreement.",
     ],
-    deadline: deadline("Call deadline", "Announced with each call — check the official site", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], src("El-yurt umidi Foundation", "https://eyuf.uz", "unverified")),
+    deadline: deadline("Call deadline", "Announced with each call — the online window is short (often about three weeks)", [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12], src("El-yurt umidi Foundation", "https://eyuf.uz", "indicative")),
     officialUrl: "https://eyuf.uz",
     source: src("El-yurt umidi Foundation", "https://eyuf.uz", "indicative"),
     tags: ["Uzbekistan", "government", "study abroad", "fully funded"],
@@ -1105,7 +1109,7 @@ const baseOpportunities: Opportunity[] = [
   },
 ];
 
-export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities];
+export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities, ...moreOpportunities];
 
 const bySlug = new Map(opportunities.map((o) => [o.slug, o]));
 

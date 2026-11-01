@@ -19,6 +19,8 @@ export function HeroGlobe({ points, arcTo, highlights }: { points: GlobePoint[];
         origin={{ lat: 41.31, lng: 69.28, label: "Tashkent" }}
         arcTo={arcTo}
         autoRotate
+        beams
+        stars
         interactive
         onHover={setHover}
         onSelect={(id) => router.push(`/universities/${id}`)}

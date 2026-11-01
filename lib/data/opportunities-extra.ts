@@ -6,11 +6,11 @@ import { deadline, src } from "./sources";
  * `v: true` = eligibility/dates read from the official page this session → "verified" (2026-11).
  */
 
-const ALL12 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
-const UG: StudentLevel[] = ["undergraduate"];
-const GRAD: StudentLevel[] = ["graduate", "masters"];
-const ANY: StudentLevel[] = ["high-school", "undergraduate", "masters", "phd", "graduate"];
-const UNI: StudentLevel[] = ["undergraduate", "masters", "phd"];
+export const ALL12 = [1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12];
+export const UG: StudentLevel[] = ["undergraduate"];
+export const GRAD: StudentLevel[] = ["graduate", "masters"];
+export const ANY: StudentLevel[] = ["high-school", "undergraduate", "masters", "phd", "graduate"];
+export const UNI: StudentLevel[] = ["undergraduate", "masters", "phd"];
 
 interface Spec {
   slug: string;
@@ -33,7 +33,7 @@ interface Spec {
   tags: string[];
 }
 
-function O(x: Spec): Opportunity {
+export function O(x: Spec): Opportunity {
   const source = x.v ? { org: x.org, url: x.url, status: "verified" as const, lastVerified: "2026-11" } : src(x.org, x.url, "unverified");
   return {
     slug: x.slug,
@@ -57,9 +57,9 @@ function O(x: Spec): Opportunity {
   };
 }
 
-const other = (text: string): Requirement => ({ kind: "other", text });
-const lvl = (levels: StudentLevel[], text: string): Requirement => ({ kind: "level", levels, text });
-const FULL = (summary: string) => ({ kind: "fully-funded" as const, summary });
+export const other = (text: string): Requirement => ({ kind: "other", text });
+export const lvl = (levels: StudentLevel[], text: string): Requirement => ({ kind: "level", levels, text });
+export const FULL = (summary: string) => ({ kind: "fully-funded" as const, summary });
 
 export const extraOpportunities: Opportunity[] = [
   // ───────── Scholarships ─────────
