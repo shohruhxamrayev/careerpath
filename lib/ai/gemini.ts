@@ -14,7 +14,7 @@ type Content = { role: "user" | "model"; parts: Part[] };
 
 const MAX_ROUNDS = 6;
 // Tried in order: an explicit GEMINI_MODEL, then the rolling "latest Flash" alias, then stable fallbacks.
-const MODELS = () => Array.from(new Set([process.env.GEMINI_MODEL, "gemini-flash-latest", "gemini-2.5-flash", "gemini-flash-lite-latest", "gemini-2.5-flash-lite"].filter(Boolean) as string[]));
+const MODELS = () => Array.from(new Set([process.env.GEMINI_MODEL, "gemini-2.5-flash", "gemini-flash-latest", "gemini-2.5-flash-lite", "gemini-flash-lite-latest"].filter(Boolean) as string[]));
 
 /** Convert our JSON-schema tool definitions into Gemini function declarations (OpenAPI subset). */
 function clean(schema: unknown): unknown {
@@ -48,22 +48,39 @@ export async function runGemini(opts: {
   let produced = false;
   const models = MODELS();
   let mi = 0;
+  const deadline = Date.now() + 52000; // stay inside the serverless time limit
 
   for (let round = 0; round < MAX_ROUNDS; round++) {
+    const left = deadline - Date.now();
+    if (left < 4000) break;
     const ctrl = new AbortController();
-    const timer = setTimeout(() => ctrl.abort(), 45000);
+    // a model that hasn't started answering within ~18s is likely overloaded → try the next one
+    let started = false;
+    const timer = setTimeout(() => ctrl.abort(), Math.min(left, 18000));
     const base = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
-    const r = await fetch(`${base}/v1beta/models/${models[mi]}:streamGenerateContent?alt=sse`, {
-      method: "POST",
-      signal: ctrl.signal,
-      headers: { "content-type": "application/json", "x-goog-api-key": key },
-      body: JSON.stringify({
-        systemInstruction: { parts: [{ text: opts.system }] },
-        contents,
-        tools: [{ functionDeclarations: DECLARATIONS }],
-        generationConfig: { temperature: 0.4, maxOutputTokens: 3000 },
-      }),
-    });
+    const model = models[mi];
+    let r: Response;
+    try {
+      r = await fetch(`${base}/v1beta/models/${model}:streamGenerateContent?alt=sse`, {
+        method: "POST",
+        signal: ctrl.signal,
+        headers: { "content-type": "application/json", "x-goog-api-key": key },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: opts.system }] },
+          contents,
+          tools: [{ functionDeclarations: DECLARATIONS }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 3000, ...(/2\.5-flash/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
+        }),
+      });
+    } catch (e) {
+      clearTimeout(timer);
+      if (!produced && mi < models.length - 1) {
+        mi++;
+        round--;
+        continue;
+      }
+      throw e;
+    }
     if (!r.ok || !r.body) {
       clearTimeout(timer);
       // unknown model or quota exhausted on this model → try the next one (before any text was sent)
@@ -83,6 +100,9 @@ export async function runGemini(opts: {
 
     const modelParts: Part[] = [];
     const calls: { name: string; args: Record<string, unknown> }[] = [];
+    started = true;
+    clearTimeout(timer);
+    const streamTimer = setTimeout(() => ctrl.abort(), Math.max(3000, deadline - Date.now()));
     const reader = r.body.getReader();
     const dec = new TextDecoder();
     let buf = "";
@@ -114,7 +134,8 @@ export async function runGemini(opts: {
         }
       }
     }
-    clearTimeout(timer);
+    clearTimeout(streamTimer);
+    void started;
     if (!calls.length) break;
 
     contents.push({ role: "model", parts: modelParts });
