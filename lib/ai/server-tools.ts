@@ -173,3 +173,29 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
 }
 
 export const DATASET_SUMMARY = () => `${universities.length} universities in ${new Set(universities.map((u) => u.country)).size} countries, ${opportunities.length} opportunities, ${careers.length} careers`;
+
+/**
+ * Pre-fetch the data a question most likely needs, so the model can usually answer in ONE call
+ * (no tool round-trips). Tools stay available for anything this misses.
+ */
+export function prefetchContext(question: string, profile: StudentProfile | null, planner: Planner) {
+  const s = question.toLowerCase();
+  const e = parseEntities(question);
+  const p = profile && isProfileReady(profile) ? profile : null;
+  const pack: Record<string, unknown> = {};
+  if (e.universities.length) pack.universities = e.universities.slice(0, 4).map((u) => uniBrief(u, p));
+  if (e.opportunities.length) pack.opportunities = e.opportunities.slice(0, 3).map((o) => oppBrief(o, p));
+  if (e.careers.length) pack.careers = e.careers.slice(0, 2).map((c) => careerBrief(c, p));
+  const guide = GUIDES.find((g) => g.match.test(s));
+  if (guide) pack.guide = { title: guide.title, content: guide.body, sources: guide.sources ?? [] };
+  const wantsUnis = /universit|college|study in|where (can|should) i study/.test(s);
+  if (!e.universities.length && (wantsUnis || e.countries.length || e.ielts || e.cheap || e.fullNeed) && !e.types.length) {
+    pack.universitySearch = runTool("search_universities", { countries: e.countries, regions: e.countries.length ? undefined : e.regions, fields: e.fields, level: e.level ?? undefined, max_ielts: e.ielts ?? undefined, max_tuition_usd: e.cheap ? 15000 : undefined, full_need_aid: e.fullNeed, max_qs_rank: e.topN ?? undefined, limit: 8 }, profile, planner);
+  }
+  if (e.types.length && !e.opportunities.length) {
+    pack.opportunitySearch = runTool("search_opportunities", { types: e.types, host_countries: e.countries, fields: e.fields, level: e.school ? "high-school" : e.level ?? undefined, fully_funded: e.funded, limit: 8 }, profile, planner);
+  }
+  if (p && /\b(i|me|my|mine)\b/.test(s)) pack.myRecommendations = runTool("get_my_recommendations", {}, profile, planner);
+  if (/deadline|due|upcoming|this month|next month|closing/.test(s)) pack.deadlines = runTool("upcoming_deadlines", { months: 3 }, profile, planner);
+  return pack;
+}

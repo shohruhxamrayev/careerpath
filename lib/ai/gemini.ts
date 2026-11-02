@@ -69,7 +69,7 @@ export async function runGemini(opts: {
           systemInstruction: { parts: [{ text: opts.system }] },
           contents,
           tools: [{ functionDeclarations: DECLARATIONS }],
-          generationConfig: { temperature: 0.4, maxOutputTokens: 3000, ...(/2\.5-flash/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
+          generationConfig: { temperature: 0.4, maxOutputTokens: 1800, ...(/2\.5-flash/.test(model) ? { thinkingConfig: { thinkingBudget: 0 } } : {}) },
         }),
       });
     } catch (e) {

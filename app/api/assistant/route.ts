@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { geminiKey, runGemini } from "@/lib/ai/gemini";
-import { AI_TOOLS, DATASET_SUMMARY, runTool, TOOL_LABELS } from "@/lib/ai/server-tools";
+import { AI_TOOLS, DATASET_SUMMARY, prefetchContext, runTool, TOOL_LABELS } from "@/lib/ai/server-tools";
 import { normalizeProfile } from "@/lib/matching/profile";
 import type { StudentProfile } from "@/lib/types";
 
@@ -34,7 +34,7 @@ function systemPrompt(profileSummary: string) {
 ## Style
 - Act like an experienced, warm, direct counsellor: give a clear recommendation, the reasoning, and concrete next steps. Be honest about gaps.
 - Use markdown: short ### headings, bullet lists, **bold** names, and tables for comparisons. Link CareerPath pages with the relative URLs from tool results, e.g. [Chevening Scholarships](/opportunities/chevening-scholarships). Use official URLs only as returned by tools.
-- Default to under ~350 words; go longer only for plans, comparisons or when asked.
+- Default to under ~250 words; go longer only for plans, comparisons or when asked.
 - Reply in the student's language (English, Uzbek or Russian) if they write in it.
 - Stay on education, careers and student life. Politely decline unrelated or harmful requests.
 - Finish with one line exactly in this format, giving three short follow-up questions the student might ask next:
@@ -76,7 +76,13 @@ export async function POST(req: Request) {
   const summary = profile
     ? `The student is signed in. Basic profile: ${JSON.stringify({ name: profile.personal.name?.split(" ")[0], country: profile.personal.country, level: profile.education.level, seeking: profile.education.seeking, field: profile.education.field, major: profile.education.major, goals: profile.goals })}. Use get_my_recommendations for matches.`
     : "The student is not signed in (no profile). Answer generally and suggest creating a profile for personalised matches.";
-  const system = systemPrompt(summary);
+  const lastQ = String([...history].reverse().find((m) => m.role === "user")?.content ?? "");
+  const pack = JSON.stringify(prefetchContext(lastQ, profile, planner)).slice(0, 28000);
+  const system = `${systemPrompt(summary)}
+
+## Pre-fetched data for the latest question
+CareerPath already looked this up for you. If it covers the question, answer directly WITHOUT calling tools (faster for the student). Call tools only for anything missing.
+${pack}`;
   const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-5-5";
 
   const enc = new TextEncoder();
@@ -84,6 +90,7 @@ export async function POST(req: Request) {
     async start(controller) {
       const send = (o: unknown) => controller.enqueue(enc.encode(JSON.stringify(o) + "\n"));
       let produced = false;
+      send({ t: "step", label: "Reading CareerPath data" });
       try {
         if (useGemini) {
           const tracked = (o: unknown) => {
