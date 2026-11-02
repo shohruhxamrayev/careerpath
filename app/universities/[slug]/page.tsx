@@ -74,6 +74,9 @@ export default function UniversityPage({ params }: { params: { slug: string } })
             <div className="flex flex-wrap gap-2">
               <SaveButton kind="university" slug={u.slug} title={u.shortName ?? u.name} variant="button" />
               <AddToPlannerButton kind="university" slug={u.slug} title={u.name} subtitle={`${u.city}, ${u.country}`} deadlines={u.deadlines} />
+              <ButtonLink href={`/compare?u=${u.slug}`} variant="nightOutline">
+                Compare
+              </ButtonLink>
               <ButtonLink href={u.admissionsUrl} external variant="nightOutline">
                 Official admissions <ExternalLink className="h-3.5 w-3.5" />
               </ButtonLink>

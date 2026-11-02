@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { geminiKey, runGemini } from "@/lib/ai/gemini";
 import { AI_TOOLS, DATASET_SUMMARY, runTool, TOOL_LABELS } from "@/lib/ai/server-tools";
 import { normalizeProfile } from "@/lib/matching/profile";
 import type { StudentProfile } from "@/lib/types";
@@ -45,7 +46,7 @@ ${profileSummary}`;
 }
 
 export async function GET() {
-  return NextResponse.json({ enabled: !!process.env.ANTHROPIC_API_KEY });
+  return NextResponse.json({ enabled: !!(process.env.ANTHROPIC_API_KEY || geminiKey()), provider: process.env.ANTHROPIC_API_KEY ? "claude" : geminiKey() ? "gemini" : null });
 }
 
 type Block = { type: "text"; text: string } | { type: "tool_use"; id: string; name: string; input: unknown };
@@ -53,7 +54,8 @@ type Msg = { role: "user" | "assistant"; content: string | unknown[] };
 
 export async function POST(req: Request) {
   const key = process.env.ANTHROPIC_API_KEY;
-  if (!key) return NextResponse.json({ fallback: true, reason: "not-configured" });
+  const useGemini = !key && !!geminiKey();
+  if (!key && !useGemini) return NextResponse.json({ fallback: true, reason: "not-configured" });
 
   let body: { messages?: { role: string; content: string }[]; profile?: Partial<StudentProfile> | null; planner?: { title: string; status: string; deadline: string | null }[] };
   try {
@@ -83,6 +85,15 @@ export async function POST(req: Request) {
       const send = (o: unknown) => controller.enqueue(enc.encode(JSON.stringify(o) + "\n"));
       let produced = false;
       try {
+        if (useGemini) {
+          const tracked = (o: unknown) => {
+            if ((o as { t?: string }).t === "delta") produced = true;
+            send(o);
+          };
+          produced = (await runGemini({ history: history as { role: "user" | "assistant"; content: string }[], system, profile, planner, send: tracked })) || produced;
+          send(produced ? { t: "done" } : { t: "fallback" });
+          return;
+        }
         const messages: Msg[] = [...history];
         for (let round = 0; round < MAX_TOOL_ROUNDS; round++) {
           const ctrl = new AbortController();
@@ -90,7 +101,7 @@ export async function POST(req: Request) {
           const r = await fetch(`${process.env.ANTHROPIC_BASE_URL || "https://api.anthropic.com"}/v1/messages`, {
             method: "POST",
             signal: ctrl.signal,
-            headers: { "content-type": "application/json", "x-api-key": key, "anthropic-version": "2023-06-01" },
+            headers: { "content-type": "application/json", "x-api-key": key!, "anthropic-version": "2023-06-01" },
             body: JSON.stringify({ model, max_tokens: 2500, system, tools: AI_TOOLS, messages, stream: true }),
           });
           if (!r.ok || !r.body) {

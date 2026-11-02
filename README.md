@@ -26,6 +26,8 @@ Copy `.env.example` to `.env.local`.
 | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Switches auth and storage to Supabase. Run `supabase/schema.sql` in the SQL editor first (tables + Row Level Security). |
 | `ANTHROPIC_API_KEY` | Enables the AI advisor (Claude with tool use over the dataset, streamed). Server-side only. |
 | `ANTHROPIC_MODEL` | Optional model override (default `claude-sonnet-5-5`). |
+| `GEMINI_API_KEY` | Free alternative: Google Gemini with the same tools, used when no Anthropic key is set. Falls back to lighter models on rate limits, then to the built-in advisor. |
+| `GEMINI_MODEL` | Optional Gemini model override. |
 
 If the AI key is missing or a request fails, the assistant falls back to the built-in advisor (`lib/ai/advisor.ts`), which understands comparisons, filtered searches, specific universities/programmes, and 20+ advising topics (essays, tests, visas, funding). It never shows an API error.
 
@@ -41,6 +43,7 @@ If the AI key is missing or a request fails, the assistant falls back to the bui
 | `/careers`, `/careers/[slug]` | Career paths with skills, routes, entry roles, resources and Career Match |
 | `/for-you` | Personalised recommendations, each with its reason, plus next steps |
 | `/roadmap` | Month-by-month plan from today to the intake: tests, essays, university and scholarship deadlines, readiness score, one-click add to planner |
+| `/compare` | Up to four universities side by side with the best value highlighted per row and your Profile Match |
 | `/planner` | Overview, applications, tasks, calendar and saved items |
 | `/search` | Categorised global search (also ⌘K / Ctrl+K anywhere) |
 | `/assistant` | Path Advisor: streamed AI advice grounded in the dataset via tools (search/compare universities and opportunities, eligibility, deadlines, guides), with an offline advisor fallback |

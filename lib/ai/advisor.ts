@@ -250,7 +250,7 @@ function compareUniversities(list: University[], p: StudentProfile | null, nudge
     notes.push(`**Best fit for your profile:** ${best.shortName ?? best.name} (${ms[list.indexOf(best)]!.score}%).`);
   }
   return {
-    text: `### ${list.map((u) => u.shortName ?? u.name).join(" vs ")}\n\n${table}\n\n${notes.join(" ")}\n\nRankings are one signal — compare the actual course modules, total cost after aid, and graduate outcomes too. ${list.map(uLink).join(" · ")}${nudge}`,
+    text: `### ${list.map((u) => u.shortName ?? u.name).join(" vs ")}\n\n${table}\n\n${notes.join(" ")}\n\nRankings are one signal — compare the actual course modules, total cost after aid, and graduate outcomes too. [Open this comparison](/compare?u=${list.map((u) => u.slug).join(",")}) · ${list.map(uLink).join(" · ")}${nudge}`,
     suggestions: [`When are the deadlines for ${list[0].shortName ?? list[0].name}?`, "How do I build a balanced university list?", "What scholarships am I eligible for?"],
   };
 }
