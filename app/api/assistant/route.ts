@@ -174,8 +174,9 @@ export async function POST(req: Request) {
           if (produced) send({ t: "delta", text: "\n\n" });
         }
         send(produced ? { t: "done" } : { t: "fallback" });
-      } catch {
-        send(produced ? { t: "done", partial: true } : { t: "fallback" });
+      } catch (err) {
+        // reason helps diagnose provider problems; never includes the key
+        send(produced ? { t: "done", partial: true } : { t: "fallback", reason: String((err as Error)?.message ?? "error").slice(0, 240) });
       } finally {
         controller.close();
       }

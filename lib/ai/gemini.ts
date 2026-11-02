@@ -72,7 +72,13 @@ export async function runGemini(opts: {
         round--;
         continue;
       }
-      throw new Error(`gemini ${r.status}`);
+      let detail = "";
+      try {
+        detail = ((await r.json()) as { error?: { message?: string } }).error?.message?.slice(0, 200) ?? "";
+      } catch {
+        /* no body */
+      }
+      throw new Error(`gemini ${r.status} ${models[mi]}: ${detail}`);
     }
 
     const modelParts: Part[] = [];
