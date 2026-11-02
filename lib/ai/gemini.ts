@@ -67,7 +67,7 @@ export async function runGemini(opts: {
     if (!r.ok || !r.body) {
       clearTimeout(timer);
       // unknown model or quota exhausted on this model → try the next one (before any text was sent)
-      if ((r.status === 404 || r.status === 400 || r.status === 429) && mi < models.length - 1 && !produced) {
+      if ((r.status === 404 || r.status === 400 || r.status === 429 || r.status >= 500) && mi < models.length - 1 && !produced) {
         mi++;
         round--;
         continue;
