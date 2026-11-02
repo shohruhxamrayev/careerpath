@@ -94,7 +94,7 @@ export function Navbar() {
                     )}
                   >
                     {n.label}
-                    {isActive(path, n.href) && <span className="absolute inset-x-3 -bottom-[13px] h-[2px] rounded-full bg-mint shadow-[0_0_12px_rgba(94,234,176,0.8)]" aria-hidden />}
+                    {isActive(path, n.href) && <span className="absolute inset-x-3 -bottom-[13px] h-[2px] rounded-full bg-mint shadow-[0_0_12px_rgba(140,207,180,0.8)]" aria-hidden />}
                   </Link>
                 </li>
               ))}
@@ -186,7 +186,7 @@ export function Navbar() {
             </div>
             <nav aria-label="Mobile" className="flex-1 overflow-y-auto p-3">
               <ul className="space-y-0.5">
-                {[...NAV, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
+                {[...NAV, { href: "/certifications", label: "Certifications" }, { href: "/compare", label: "Compare universities" }, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
                   <li key={n.href}>
                     <Link
                       href={n.href}

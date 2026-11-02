@@ -4,6 +4,7 @@ import { Html, Line, OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame, type ThreeEvent } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useVisible } from "./useVisible";
 
 export interface GlobePoint {
   id: string;
@@ -35,8 +36,8 @@ export interface GlobeProps {
 }
 
 const R = 1;
-const MINT = new THREE.Color("#5EEAB0");
-const PERI = new THREE.Color("#8EA8FF");
+const MINT = new THREE.Color("#8CCFB4");
+const PERI = new THREE.Color("#A7B4DA");
 
 export function toVec(lat: number, lng: number, r = R) {
   const phi = ((90 - lat) * Math.PI) / 180;
@@ -49,7 +50,7 @@ function Surface() {
   const mat = useMemo(
     () =>
       new THREE.ShaderMaterial({
-        uniforms: { deep: { value: new THREE.Color("#05080D") }, mid: { value: new THREE.Color("#0E1724") }, rim: { value: new THREE.Color("#2BC492") } },
+        uniforms: { deep: { value: new THREE.Color("#0E1626") }, mid: { value: new THREE.Color("#1B2639") }, rim: { value: new THREE.Color("#6FB89B") } },
         vertexShader: `varying vec3 vN; varying vec3 vV; void main(){ vec4 mv = modelViewMatrix * vec4(position,1.0); vN = normalize(normalMatrix * normal); vV = normalize(-mv.xyz); gl_Position = projectionMatrix * mv; }`,
         fragmentShader: `uniform vec3 deep; uniform vec3 mid; uniform vec3 rim; varying vec3 vN; varying vec3 vV;
           void main(){
@@ -82,7 +83,7 @@ function Graticule() {
   }, []);
   return (
     <lineSegments geometry={geo}>
-      <lineBasicMaterial color="#5EEAB0" transparent opacity={0.045} depthWrite={false} />
+      <lineBasicMaterial color="#8CCFB4" transparent opacity={0.045} depthWrite={false} />
     </lineSegments>
   );
 }
@@ -95,7 +96,7 @@ function Atmosphere() {
         side: THREE.BackSide,
         blending: THREE.AdditiveBlending,
         depthWrite: false,
-        uniforms: { c: { value: new THREE.Color("#3FD6A0") }, c2: { value: new THREE.Color("#6C8CFF") } },
+        uniforms: { c: { value: new THREE.Color("#7FC4A8") }, c2: { value: new THREE.Color("#8D9DCC") } },
         vertexShader: `varying vec3 vN; varying float vY; void main(){ vN = normalize(normalMatrix * normal); vY = normal.y; gl_Position = projectionMatrix * modelViewMatrix * vec4(position,1.0); }`,
         fragmentShader: `uniform vec3 c; uniform vec3 c2; varying vec3 vN; varying float vY; void main(){ float i = pow(max(0.0, 0.64 - dot(vN, vec3(0.0,0.0,1.0))), 3.0); vec3 col = mix(c2, c, smoothstep(-0.6, 0.6, vY)); gl_FragColor = vec4(col, 1.0) * i * 0.8; }`,
       }),
@@ -129,7 +130,7 @@ const landFS = `uniform vec3 dim; uniform vec3 lit; varying float vFace; varying
 function Land() {
   const [geo, setGeo] = useState<THREE.BufferGeometry | null>(null);
   const mat = useMemo(
-    () => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { size: { value: 0.022 }, scale: { value: 520 }, dim: { value: new THREE.Color("#2A3A4E") }, lit: { value: new THREE.Color("#8FB4D6") } }, vertexShader: landVS, fragmentShader: landFS }),
+    () => new THREE.ShaderMaterial({ transparent: true, depthWrite: false, uniforms: { size: { value: 0.022 }, scale: { value: 520 }, dim: { value: new THREE.Color("#33435A") }, lit: { value: new THREE.Color("#A3BAD0") } }, vertexShader: landVS, fragmentShader: landFS }),
     [],
   );
   useEffect(() => {
@@ -241,7 +242,7 @@ function Pin({ p, label }: { p: GlobePoint; label: boolean }) {
       </mesh>
       <mesh ref={ring}>
         <ringGeometry args={[0.022, 0.028, 40]} />
-        <meshBasicMaterial color="#5EEAB0" transparent opacity={0.7} depthWrite={false} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#8CCFB4" transparent opacity={0.7} depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
       {label && <Html style={{ pointerEvents: "none" }} zIndexRange={[20, 0]}>
         <div className="-translate-x-1/2 -translate-y-[135%] whitespace-nowrap rounded-lg border border-white/15 bg-night-900/90 px-3 py-2 text-left shadow-pop backdrop-blur">
@@ -261,7 +262,7 @@ function Beams({ points }: { points: GlobePoint[] }) {
         const w = p.weight ?? 0.5;
         const a = toVec(p.lat, p.lng, R * 1.012);
         const b = toVec(p.lat, p.lng, R * (1.03 + w * 0.06));
-        return <Line key={p.id} points={[a, b]} vertexColors={[[0.37, 0.92, 0.69], [0.02, 0.05, 0.08]]} lineWidth={1.2} transparent opacity={0.65} blending={THREE.AdditiveBlending} depthWrite={false} />;
+        return <Line key={p.id} points={[a, b]} vertexColors={[[0.55, 0.81, 0.71], [0.05, 0.08, 0.14]]} lineWidth={1.2} transparent opacity={0.65} blending={THREE.AdditiveBlending} depthWrite={false} />;
       })}
     </group>
   );
@@ -285,10 +286,10 @@ function Arc({ from, to, delay }: { from: THREE.Vector3; to: THREE.Vector3; dela
   });
   return (
     <group>
-      <Line points={pts} color="#5EEAB0" lineWidth={1} transparent opacity={0.28} depthWrite={false} />
+      <Line points={pts} color="#8CCFB4" lineWidth={1} transparent opacity={0.28} depthWrite={false} />
       <mesh ref={comet}>
         <sphereGeometry args={[0.011, 12, 12]} />
-        <meshBasicMaterial color="#C9FFE9" transparent />
+        <meshBasicMaterial color="#DDF2E8" transparent />
       </mesh>
     </group>
   );
@@ -308,7 +309,7 @@ function OriginPulse({ v }: { v: THREE.Vector3 }) {
     <group position={v} quaternion={quat}>
       <mesh ref={ring}>
         <ringGeometry args={[0.02, 0.026, 40]} />
-        <meshBasicMaterial color="#FFD27A" transparent depthWrite={false} side={THREE.DoubleSide} />
+        <meshBasicMaterial color="#E6C88E" transparent depthWrite={false} side={THREE.DoubleSide} />
       </mesh>
     </group>
   );
@@ -328,7 +329,7 @@ function Stars() {
   }, []);
   return (
     <points geometry={geo}>
-      <pointsMaterial size={0.018} color="#9FB2D0" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.018} color="#AAB5CB" transparent opacity={0.55} sizeAttenuation depthWrite={false} />
     </points>
   );
 }
@@ -389,7 +390,7 @@ function Scene({ points, origin, arcTo, focusId, interactive, zoom, autoRotate, 
           <group>
             <mesh position={originVec}>
               <sphereGeometry args={[0.018, 16, 16]} />
-              <meshBasicMaterial color="#FFD27A" />
+              <meshBasicMaterial color="#E6C88E" />
             </mesh>
             <OriginPulse v={originVec} />
             {origin?.label && (
@@ -420,17 +421,25 @@ function hasWebGL() {
 
 export default function Globe(props: GlobeProps) {
   const [ok, setOk] = useState<boolean | null>(null);
-  useEffect(() => setOk(hasWebGL()), []);
+  const { ref, visible, seen } = useVisible<HTMLDivElement>();
+  const [mobile, setMobile] = useState(false);
+  useEffect(() => {
+    setOk(hasWebGL());
+    setMobile(window.innerWidth < 768);
+  }, []);
   useEffect(() => () => {
     document.body.style.cursor = "";
   }, []);
-  if (ok === false) return <GlobeFallback className={props.className} />;
-  if (ok === null) return <div className={props.className} aria-hidden />;
+  // one stable wrapper element, so the visibility observer keeps tracking it
   return (
-    <div className={props.className} role="img" aria-label="Interactive globe showing universities in the CareerPath dataset">
-      <Canvas camera={{ position: [0, 0, 3.25], fov: 42 }} dpr={[1, 2]} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }} raycaster={{ params: { Points: { threshold: 0.025 } } as THREE.RaycasterParameters }}>
-        <Scene {...props} />
-      </Canvas>
+    <div ref={ref} className={props.className} role="img" aria-label="Interactive globe showing universities in the CareerPath dataset">
+      {ok === false || (ok && !seen) ? (
+        <GlobeFallback className="h-full w-full" />
+      ) : ok ? (
+        <Canvas frameloop={visible ? "always" : "never"} camera={{ position: [0, 0, 3.25], fov: 42 }} dpr={mobile ? [1, 1.5] : [1, 2]} gl={{ antialias: true, alpha: true, powerPreference: "high-performance" }} raycaster={{ params: { Points: { threshold: 0.025 } } as THREE.RaycasterParameters }}>
+          <Scene {...props} />
+        </Canvas>
+      ) : null}
     </div>
   );
 }
@@ -439,8 +448,8 @@ export function GlobeFallback({ className }: { className?: string }) {
   return (
     <div className={className} aria-hidden>
       <div className="relative mx-auto aspect-square h-full max-h-full">
-        <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#16202d,#070a0f_70%)] shadow-[0_0_120px_20px_rgba(94,234,176,0.12)]" />
-        <div className="absolute inset-[8%] rounded-full [background:repeating-linear-gradient(0deg,transparent_0_14px,rgba(94,234,176,0.06)_14px_15px),repeating-linear-gradient(90deg,transparent_0_14px,rgba(94,234,176,0.06)_14px_15px)] [mask-image:radial-gradient(circle,black_60%,transparent_71%)]" />
+        <div className="absolute inset-[8%] rounded-full bg-[radial-gradient(circle_at_35%_30%,#1B2639,#0E1626_70%)] shadow-[0_0_120px_20px_rgba(140,207,180,0.12)]" />
+        <div className="absolute inset-[8%] rounded-full [background:repeating-linear-gradient(0deg,transparent_0_14px,rgba(140,207,180,0.06)_14px_15px),repeating-linear-gradient(90deg,transparent_0_14px,rgba(140,207,180,0.06)_14px_15px)] [mask-image:radial-gradient(circle,black_60%,transparent_71%)]" />
       </div>
     </div>
   );

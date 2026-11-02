@@ -225,6 +225,32 @@ export const skills: Skill[] = [
     resources: [{ title: "Case interview preparation", provider: "McKinsey & Company", url: "https://www.mckinsey.com/careers/interviewing", free: true }],
     aliases: ["case interviews", "critical thinking", "analysis", "analytical thinking"],
   },
+  {
+    slug: "cloud-computing",
+    name: "Cloud computing",
+    category: "technical",
+    summary: "Run and scale applications and data on platforms like AWS, Azure and Google Cloud.",
+    whyItMatters: "Most companies now build on the cloud, so cloud skills appear in software, data, security and even product roles.",
+    howToStart: ["Create a free-tier account on one cloud provider", "Deploy a small website or database", "Take a fundamentals certification such as AWS Cloud Practitioner"],
+    resources: [
+      { title: "AWS Skill Builder", provider: "Amazon Web Services", url: "https://skillbuilder.aws", free: true },
+      { title: "Microsoft Learn — Azure Fundamentals", provider: "Microsoft", url: "https://learn.microsoft.com/training/azure/", free: true },
+    ],
+    aliases: ["aws", "azure", "gcp", "cloud", "devops"],
+  },
+  {
+    slug: "cybersecurity",
+    name: "Cybersecurity",
+    category: "technical",
+    summary: "Protect systems, networks and data from attacks.",
+    whyItMatters: "Security talent is in short supply worldwide, and every sector — banks, government, telecoms — needs it.",
+    howToStart: ["Learn networking and Linux basics", "Practise on free labs like TryHackMe or picoCTF", "Prepare for CompTIA Security+ or the Google Cybersecurity certificate"],
+    resources: [
+      { title: "picoCTF", provider: "Carnegie Mellon University", url: "https://picoctf.org", free: true },
+      { title: "TryHackMe", provider: "TryHackMe", url: "https://tryhackme.com", free: false },
+    ],
+    aliases: ["security", "infosec", "networking", "ethical hacking"],
+  },
 ];
 
 export function getSkill(slug: string) {

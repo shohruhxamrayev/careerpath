@@ -43,6 +43,7 @@ If the AI key is missing or a request fails, the assistant falls back to the bui
 | `/careers`, `/careers/[slug]` | Career paths with skills, routes, entry roles, resources and Career Match |
 | `/for-you` | Personalised recommendations, each with its reason, plus next steps |
 | `/roadmap` | Month-by-month plan from today to the intake: tests, essays, university and scholarship deadlines, readiness score, one-click add to planner |
+| `/certifications` | Certifications and courses employers recognise, with cost (verified where checked), time, level, skills and related careers; linked from career pages |
 | `/compare` | Up to four universities side by side with the best value highlighted per row and your Profile Match |
 | `/planner` | Overview, applications, tasks, calendar and saved items |
 | `/search` | Categorised global search (also ⌘K / Ctrl+K anywhere) |
@@ -70,7 +71,7 @@ supabase/schema.sql  database schema with Row Level Security
 
 ## Dataset
 
-161 universities in 32 countries (QS World University Rankings 2027 positions where published), 137 opportunities across 10 types, 18 careers. Research log: `lib/data/research/NOTES.md`.
+181 universities in 32 countries (QS World University Rankings 2027 positions where published), 144 opportunities across 10 types, 26 careers and 27 certifications/courses. Research log: `lib/data/research/NOTES.md`.
 
 ## Matching
 

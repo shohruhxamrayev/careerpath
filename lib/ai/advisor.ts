@@ -1,6 +1,7 @@
 import { findGuide } from "@/lib/ai/knowledge";
 import { careerBrief, datasetStats, parseEntities, searchCareers, searchOpportunities, searchUniversities, type Entities } from "@/lib/ai/tools";
 import { careers } from "@/lib/data/careers";
+import { certifications } from "@/lib/data/certifications";
 import { opportunities } from "@/lib/data/opportunities";
 import { AID_LABELS, FIELD_LABELS, MONTHS, OPPORTUNITY_TYPE_PLURAL, SELECTIVITY_LABELS } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
@@ -95,6 +96,16 @@ export function advise(question: string, profile: StudentProfile | null, applica
     const g = findGuide(s);
     if (g && g.id === "el-yurt-umidi") return { text: g.body + "\n\n" + r.text.split("\n").filter((l) => /Profile Match|don't currently meet|^- [✗?]|Official website/.test(l)).join("\n"), suggestions: g.followUps, sources: g.sources };
     return r;
+  }
+
+  // ── certifications & courses ──
+  if (/certif|credential|micro-?credential|online course|which course|courses? (for|to)|upskill/.test(s)) {
+    const career = e.careers[0];
+    const list = (career ? certifications.filter((c) => c.careers.includes(career.slug)) : certifications.filter((c) => !/Languages/.test(c.category))).slice(0, 7);
+    return {
+      text: `### Certifications${career ? ` for ${career.title}` : " worth considering"}\n${list.map((c) => `- **${c.name}** (${c.provider}) — ${c.level}, ${c.duration}. **Cost:** ${c.cost.display}${c.cost.status === "verified" ? " ✓" : ""}. ${c.why}`).join("\n")}\n\nEmployers value a certificate most when it's paired with a project that uses the skill. Browse all of them with filters on [Certifications](/certifications${career ? `?career=${career.slug}` : ""}).`,
+      suggestions: ["Free certifications for data analysis", "What skills should I build?", "What career fits my interests?"],
+    };
   }
 
   // ── knowledge guides (essays, tests, visas, funding, …) ──

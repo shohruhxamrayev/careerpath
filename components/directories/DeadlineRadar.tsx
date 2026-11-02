@@ -44,12 +44,12 @@ export function DeadlineRadar() {
       <svg viewBox="0 0 320 320" className="w-full overflow-visible">
         <defs>
           <radialGradient id="dr-glow" cx="50%" cy="50%" r="50%">
-            <stop offset="0%" stopColor="#5EEAB0" stopOpacity="0.16" />
-            <stop offset="100%" stopColor="#5EEAB0" stopOpacity="0" />
+            <stop offset="0%" stopColor="#8CCFB4" stopOpacity="0.16" />
+            <stop offset="100%" stopColor="#8CCFB4" stopOpacity="0" />
           </radialGradient>
           <linearGradient id="dr-sweep" x1="0" x2="1" y1="0" y2="1">
-            <stop offset="0%" stopColor="#5EEAB0" stopOpacity="0.28" />
-            <stop offset="100%" stopColor="#8EA8FF" stopOpacity="0.04" />
+            <stop offset="0%" stopColor="#8CCFB4" stopOpacity="0.28" />
+            <stop offset="100%" stopColor="#A7B4DA" stopOpacity="0.04" />
           </linearGradient>
         </defs>
         <circle cx={C} cy={C} r={R1 + 10} fill="url(#dr-glow)" />
@@ -75,15 +75,15 @@ export function DeadlineRadar() {
           return (
             <g key={mi} onMouseEnter={() => setHover(mi)} onMouseLeave={() => setHover(null)} className="cursor-default">
               <line x1={xa} y1={ya} x2={polar(R1, a)[0]} y2={polar(R1, a)[1]} stroke="transparent" strokeWidth={22} />
-              <line x1={xa} y1={ya} x2={xb} y2={yb} stroke={soon ? "#5EEAB0" : "#8EA8FF"} strokeOpacity={active ? 1 : soon ? 0.85 : 0.4} strokeWidth={active ? 9 : 7} strokeLinecap="round" style={{ transition: "all .25s" }} />
-              <circle cx={xb} cy={yb} r={active ? 4 : 2.5} fill={soon ? "#5EEAB0" : "#C9D4FF"} />
+              <line x1={xa} y1={ya} x2={xb} y2={yb} stroke={soon ? "#8CCFB4" : "#A7B4DA"} strokeOpacity={active ? 1 : soon ? 0.85 : 0.4} strokeWidth={active ? 9 : 7} strokeLinecap="round" style={{ transition: "all .25s" }} />
+              <circle cx={xb} cy={yb} r={active ? 4 : 2.5} fill={soon ? "#8CCFB4" : "#D3DAEE"} />
               <text x={xl} y={yl} textAnchor="middle" dominantBaseline="middle" className="font-mono" fontSize="9.5" fill={active ? "#fff" : "rgba(255,255,255,0.45)"} letterSpacing="0.08em">
                 {MONTHS[mi].toUpperCase()}
               </text>
             </g>
           );
         })}
-        <circle cx={C} cy={C} r={R0 - 8} fill="#0A1018" stroke="rgba(94,234,176,0.25)" />
+        <circle cx={C} cy={C} r={R0 - 8} fill="#121B2B" stroke="rgba(140,207,180,0.25)" />
         <text x={C} y={C - 8} textAnchor="middle" fill="#fff" fontSize="26" fontWeight={600}>{byMonth[focus].length}</text>
         <text x={C} y={C + 12} textAnchor="middle" fill="rgba(255,255,255,0.55)" fontSize="9" className="font-mono" letterSpacing="0.08em">
           CLOSE IN {MONTHS[focus].toUpperCase()}

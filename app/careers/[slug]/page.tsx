@@ -7,6 +7,8 @@ import { OpportunityCard, UniversityCard } from "@/components/cards";
 import { SectionNav } from "@/components/detail";
 import { Badge } from "@/components/ui";
 import { careers, getCareer } from "@/lib/data/careers";
+import { certificationsFor } from "@/lib/data/certifications";
+import { CertCard } from "@/components/certifications/CertificationDirectory";
 import { getOpportunity } from "@/lib/data/opportunities";
 import { getSkill } from "@/lib/data/skills";
 import { FIELD_LABELS } from "@/lib/data/taxonomy";
@@ -28,6 +30,7 @@ const SECTIONS = [
   { id: "education", label: "Education paths" },
   { id: "roles", label: "Entry roles" },
   { id: "build", label: "Build your profile" },
+  { id: "certifications", label: "Certifications" },
   { id: "resources", label: "Courses & resources" },
   { id: "majors", label: "Related majors" },
 ];
@@ -118,6 +121,15 @@ export default function CareerPage({ params }: { params: { slug: string } }) {
             {interns.length > 0 && (<><h3 className="mb-3 text-[14px] font-semibold">Recommended internships & programmes</h3><div className="mb-5 grid gap-3 sm:grid-cols-2">{interns.map((o) => <OpportunityCard key={o.slug} o={o} compact />)}</div></>)}
             {otherOpps.length > 0 && (<><h3 className="mb-3 text-[14px] font-semibold">Scholarships & fellowships</h3><div className="grid gap-3 sm:grid-cols-2">{otherOpps.map((o) => <OpportunityCard key={o.slug} o={o} compact />)}</div></>)}
           </Block>
+
+          {certificationsFor({ career: c.slug }).length > 0 && (
+            <Block id="certifications" title="Certifications that help">
+              <div className="grid gap-3 sm:grid-cols-2">
+                {certificationsFor({ career: c.slug }).slice(0, 4).map((x) => <CertCard key={x.slug} c={x} compact />)}
+              </div>
+              <Link href={`/certifications?career=${c.slug}`} className="mt-3 inline-block text-[13px] font-medium text-brand-700 hover:underline">All certifications for this career →</Link>
+            </Block>
+          )}
 
           <Block id="resources" title="Courses & resources">
             <ul className="divide-y divide-line rounded border border-line">

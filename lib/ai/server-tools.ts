@@ -1,6 +1,7 @@
 import { GUIDES, getGuide } from "@/lib/ai/knowledge";
 import { careerBrief, oppBrief, parseEntities, searchCareers, searchOpportunities, searchUniversities, uniBrief } from "@/lib/ai/tools";
 import { careers } from "@/lib/data/careers";
+import { certifications } from "@/lib/data/certifications";
 import { opportunities } from "@/lib/data/opportunities";
 import { FIELDS, OPPORTUNITY_TYPES, REGIONS } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
@@ -71,6 +72,11 @@ export const AI_TOOLS = [
     input_schema: { type: "object", properties: { query: { type: "string" } } },
   },
   {
+    name: "search_certifications",
+    description: "Industry certifications and courses (AWS, Google, Microsoft, CFA, ACCA, PMI, CompTIA, Cisco, CS50, IELTS…) with cost, level, time, skills and related careers. Use for questions about certificates, courses, credentials or upskilling.",
+    input_schema: { type: "object", properties: { query: { type: "string" }, career: { type: "string", description: "Career slug, e.g. data-analyst" }, free_only: { type: "boolean" } } },
+  },
+  {
     name: "get_guide",
     description: "Expert advising guide with checked facts. Topics: " + GUIDES.map((g) => `${g.id} (${g.title})`).join("; "),
     input_schema: { type: "object", properties: { topic: { type: "string", enum: GUIDES.map((g) => g.id) } }, required: ["topic"] },
@@ -95,6 +101,7 @@ export const TOOL_LABELS: Record<string, string> = {
   get_opportunity: "Reading programme rules",
   search_careers: "Exploring careers",
   get_guide: "Checking advising guide",
+  search_certifications: "Finding certifications",
   get_my_recommendations: "Analysing your profile",
   upcoming_deadlines: "Checking deadlines",
 };
@@ -139,6 +146,11 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
     }
     case "search_careers":
       return { careers: searchCareers(String(input.query ?? ""), p).slice(0, 6).map(({ c }) => careerBrief(c, p)) };
+    case "search_certifications": {
+      const q = String(input.query ?? "").toLowerCase();
+      const rows = certifications.filter((c) => (!input.career || c.careers.includes(String(input.career))) && (!input.free_only || c.cost.free) && (!q || [c.name, c.provider, c.category, c.summary, ...c.careers].join(" ").toLowerCase().includes(q)));
+      return { url: "/certifications", certifications: (rows.length ? rows : certifications).slice(0, 10).map((c) => ({ name: c.name, provider: c.provider, category: c.category, level: c.level, cost: c.cost.display, costStatus: c.cost.status, duration: c.duration, why: c.why, official: c.url, careers: c.careers })) };
+    }
     case "get_guide": {
       const g = getGuide(String(input.topic));
       return g ? { title: g.title, content: g.body, sources: g.sources ?? [] } : { error: "Unknown topic" };
@@ -196,6 +208,7 @@ export function prefetchContext(question: string, profile: StudentProfile | null
     pack.opportunitySearch = runTool("search_opportunities", { types: e.types, host_countries: e.countries, fields: e.fields, level: e.school ? "high-school" : e.level ?? undefined, fully_funded: e.funded, limit: 8 }, profile, planner);
   }
   if (p && /\b(i|me|my|mine)\b/.test(s)) pack.myRecommendations = runTool("get_my_recommendations", {}, profile, planner);
+  if (/certif|course|credential|upskill|micro-?credential|learn online/.test(s)) pack.certifications = runTool("search_certifications", { career: e.careers[0]?.slug }, profile, planner);
   if (/deadline|due|upcoming|this month|next month|closing/.test(s)) pack.deadlines = runTool("upcoming_deadlines", { months: 3 }, profile, planner);
   return pack;
 }

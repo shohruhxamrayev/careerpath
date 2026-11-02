@@ -292,7 +292,7 @@ function ReadinessCard({ score, readiness, months, deadlines }: { score: number;
       <div className="flex items-center gap-5">
         <svg viewBox="0 0 120 120" className="h-28 w-28 shrink-0 -rotate-90" aria-hidden>
           <defs>
-            <linearGradient id="rdy" x1="0" x2="1"><stop offset="0%" stopColor="#5EEAB0" /><stop offset="100%" stopColor="#8EA8FF" /></linearGradient>
+            <linearGradient id="rdy" x1="0" x2="1"><stop offset="0%" stopColor="#8CCFB4" /><stop offset="100%" stopColor="#A7B4DA" /></linearGradient>
           </defs>
           <circle cx="60" cy="60" r={r} fill="none" stroke="rgba(255,255,255,0.08)" strokeWidth="10" />
           <circle cx="60" cy="60" r={r} fill="none" stroke="url(#rdy)" strokeWidth="10" strokeLinecap="round" strokeDasharray={circ} strokeDashoffset={circ * (1 - score / 100)} style={{ transition: "stroke-dashoffset .6s ease" }} />

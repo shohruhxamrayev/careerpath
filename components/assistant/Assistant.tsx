@@ -246,7 +246,7 @@ export function Assistant() {
             <div className="night relative flex flex-1 flex-col items-center justify-center overflow-hidden rounded-2xl bg-night-950 px-5 py-12 text-center sm:px-8">
               <div className="night-grid pointer-events-none absolute inset-0 opacity-60 [mask-image:radial-gradient(ellipse_at_center,black,transparent_75%)]" aria-hidden />
               <div className="pointer-events-none absolute left-1/2 top-0 h-[300px] w-[520px] -translate-x-1/2 rounded-full bg-mint/10 blur-[100px]" aria-hidden />
-              <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-mint/25 bg-mint/10 text-mint shadow-[0_0_40px_-8px_rgba(94,234,176,0.5)]">
+              <div className="relative mb-5 flex h-14 w-14 items-center justify-center rounded-2xl border border-mint/25 bg-mint/10 text-mint shadow-[0_0_40px_-8px_rgba(140,207,180,0.5)]">
                 <Sparkles className="h-6 w-6" />
               </div>
               <h2 className="display relative text-[32px] leading-tight text-white sm:text-[40px]">Your personal <span className="font-serif italic text-mint">study-abroad</span> advisor</h2>

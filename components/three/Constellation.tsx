@@ -4,6 +4,7 @@ import { Html, Line, OrbitControls } from "@react-three/drei";
 import { Canvas, useFrame } from "@react-three/fiber";
 import { useEffect, useMemo, useRef, useState } from "react";
 import * as THREE from "three";
+import { useVisible } from "./useVisible";
 
 export interface ConstellationNode {
   id: string;
@@ -61,7 +62,7 @@ function Scene({ nodes, onSelect, highlight }: { nodes: ConstellationNode[]; onS
           const a = pos.get(c.id), b = pos.get(s);
           if (!a || !b) return null;
           const on = active === c.id || active === s;
-          return <Line key={`${c.id}-${s}`} points={[a, b]} color={on ? "#5EEAB0" : "#8EA8FF"} lineWidth={on ? 1.6 : 0.6} transparent opacity={on ? 0.95 : active ? 0.05 : 0.16} />;
+          return <Line key={`${c.id}-${s}`} points={[a, b]} color={on ? "#8CCFB4" : "#A7B4DA"} lineWidth={on ? 1.6 : 0.6} transparent opacity={on ? 0.95 : active ? 0.05 : 0.16} />;
         }),
       )}
       {nodes.map((n) => {
@@ -69,7 +70,7 @@ function Scene({ nodes, onSelect, highlight }: { nodes: ConstellationNode[]; onS
         const isCareer = n.kind === "career";
         const dim = active && active !== n.id && !activeLinks.has(n.id);
         const s = isCareer ? 0.045 + ((n.score ?? 55) / 100) * 0.045 : 0.026;
-        const color = isCareer ? (n.score == null ? "#7FE7BF" : n.score >= 70 ? "#5EEAB0" : "#9FB2E8") : "#6F86D6";
+        const color = isCareer ? (n.score == null ? "#9FD8C1" : n.score >= 70 ? "#8CCFB4" : "#AEB9DA") : "#8392C4";
         return (
           <group key={n.id} position={p}>
             <mesh
@@ -124,13 +125,14 @@ function Dust() {
   }, []);
   return (
     <points geometry={geo}>
-      <pointsMaterial size={0.02} color="#8EA8FF" transparent opacity={0.35} sizeAttenuation depthWrite={false} />
+      <pointsMaterial size={0.02} color="#A7B4DA" transparent opacity={0.35} sizeAttenuation depthWrite={false} />
     </points>
   );
 }
 
 export default function Constellation({ nodes, onSelect, highlight, className, interactive = true }: { nodes: ConstellationNode[]; onSelect?: (id: string) => void; highlight?: string | null; className?: string; interactive?: boolean }) {
   const [ok, setOk] = useState<boolean | null>(null);
+  const { ref, visible, seen } = useVisible<HTMLDivElement>();
   useEffect(() => {
     try {
       const c = document.createElement("canvas");
@@ -142,14 +144,15 @@ export default function Constellation({ nodes, onSelect, highlight, className, i
       document.body.style.cursor = "";
     };
   }, []);
-  if (!ok) return <div className={className} aria-hidden />;
   return (
-    <div className={className} role="img" aria-label="Interactive 3D map of careers and the skills they share">
-      <Canvas camera={{ position: [0, 0.4, 5.4], fov: 45 }} dpr={[1, 1.75]} gl={{ antialias: true, alpha: true }}>
+    <div ref={ref} className={className} role="img" aria-label="Interactive 3D map of careers and the skills they share">
+      {ok && seen ? (
+        <Canvas frameloop={visible ? "always" : "never"} camera={{ position: [0, 0.4, 5.4], fov: 45 }} dpr={[1, 1.75]} gl={{ antialias: true, alpha: true }}>
         <Dust />
         <Scene nodes={nodes} onSelect={onSelect} highlight={highlight} />
         {interactive && <OrbitControls enablePan={false} enableZoom={false} enableDamping dampingFactor={0.08} rotateSpeed={0.5} />}
       </Canvas>
+      ) : null}
     </div>
   );
 }

@@ -18,7 +18,7 @@ const variants: Record<Variant, string> = {
   ghost: "text-ink-2 hover:bg-ink/[0.05] hover:text-ink",
   subtle: "bg-brand-50 text-brand-700 hover:bg-brand-100",
   danger: "bg-bad text-white hover:bg-[#8a2822]",
-  mint: "bg-mint text-night-900 hover:bg-mint-300 shadow-[0_0_0_1px_rgba(94,234,176,0.4),0_8px_30px_-8px_rgba(94,234,176,0.6)]",
+  mint: "bg-mint text-night-900 hover:bg-mint-300 shadow-[0_0_0_1px_rgba(140,207,180,0.4),0_8px_30px_-8px_rgba(140,207,180,0.6)]",
   nightOutline: "border border-white/15 bg-white/[0.03] text-white hover:border-white/30 hover:bg-white/[0.07]",
 };
 const sizes: Record<Size, string> = {

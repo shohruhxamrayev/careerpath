@@ -11,10 +11,10 @@ export function LogoMark({ className }: { className?: string }) {
           <stop offset="1" stopColor="#14563F" />
         </linearGradient>
       </defs>
-      <rect x="0.5" y="0.5" width="27" height="27" rx="7" fill="url(#cpg)" stroke="rgba(94,234,176,0.35)" />
-      <path d="M8 19.5 H13 V8.5 H20" fill="none" stroke="#E9FFF6" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
-      <circle cx="8" cy="19.5" r="2.2" fill="#E9FFF6" />
-      <circle cx="20" cy="8.5" r="2.4" fill="#5EEAB0" />
+      <rect x="0.5" y="0.5" width="27" height="27" rx="7" fill="url(#cpg)" stroke="rgba(140,207,180,0.35)" />
+      <path d="M8 19.5 H13 V8.5 H20" fill="none" stroke="#EEF7F2" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      <circle cx="8" cy="19.5" r="2.2" fill="#EEF7F2" />
+      <circle cx="20" cy="8.5" r="2.4" fill="#8CCFB4" />
     </svg>
   );
 }

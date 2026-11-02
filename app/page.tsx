@@ -222,7 +222,7 @@ export default function Home() {
 
       {/* ───────── CTA ───────── */}
       <section className="noise relative overflow-hidden border-t border-white/[0.06]">
-        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_120%,rgba(94,234,176,0.18),transparent)]" aria-hidden />
+        <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_60%_80%_at_50%_120%,rgba(140,207,180,0.18),transparent)]" aria-hidden />
         <div className="container relative flex flex-col items-center py-24 text-center">
           <h2 className="display max-w-3xl text-[44px] leading-[1] sm:text-[64px]">
             Find your path. <span className="accent-serif text-gradient">Build your future.</span>

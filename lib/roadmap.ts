@@ -13,12 +13,12 @@ import type { DegreeLevel, Field, Opportunity, StudentProfile, University } from
 export type Lane = "tests" | "universities" | "funding" | "profile" | "essays" | "move";
 
 export const LANES: { id: Lane; label: string; color: string }[] = [
-  { id: "tests", label: "Tests", color: "#8EA8FF" },
-  { id: "universities", label: "Universities", color: "#5EEAB0" },
-  { id: "funding", label: "Funding", color: "#FFD27A" },
-  { id: "profile", label: "Profile building", color: "#F49AC1" },
-  { id: "essays", label: "Essays & documents", color: "#B7A6FF" },
-  { id: "move", label: "Offers, visa & move", color: "#7FD3F7" },
+  { id: "tests", label: "Tests", color: "#A7B4DA" },
+  { id: "universities", label: "Universities", color: "#8CCFB4" },
+  { id: "funding", label: "Funding", color: "#E6C88E" },
+  { id: "profile", label: "Profile building", color: "#D9A7BD" },
+  { id: "essays", label: "Essays & documents", color: "#B4ABD6" },
+  { id: "move", label: "Offers, visa & move", color: "#9CC8DC" },
 ];
 
 export interface RoadmapInput {
