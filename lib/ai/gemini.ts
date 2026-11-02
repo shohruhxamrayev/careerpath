@@ -54,9 +54,9 @@ export async function runGemini(opts: {
     const left = deadline - Date.now();
     if (left < 4000) break;
     const ctrl = new AbortController();
-    // a model that hasn't started answering within ~18s is likely overloaded → try the next one
+    // a model that hasn't started answering within ~8s is likely overloaded → try the next one
     let started = false;
-    const timer = setTimeout(() => ctrl.abort(), Math.min(left, 18000));
+    const timer = setTimeout(() => ctrl.abort(), Math.min(left, 8000));
     const base = process.env.GEMINI_BASE_URL || "https://generativelanguage.googleapis.com";
     const model = models[mi];
     let r: Response;
