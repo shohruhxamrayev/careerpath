@@ -114,7 +114,7 @@ export const DEGREE_LEVEL_LABELS: Record<DegreeLevel, string> = {
   phd: "PhD",
 };
 
-export const REGIONS: Region[] = ["North America", "United Kingdom", "Europe", "East Asia", "Southeast Asia", "Central Asia", "Middle East", "Oceania"];
+export const REGIONS: Region[] = ["North America", "United Kingdom", "Europe", "East Asia", "Southeast Asia", "Central Asia", "Middle East", "Oceania", "South Asia", "Latin America", "Africa"];
 
 export const TUITION_BAND_LABELS: Record<TuitionBand, string> = {
   "under-5k": "Under $5k",

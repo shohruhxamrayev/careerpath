@@ -29,7 +29,7 @@ const COUNTRY_ALIASES: Record<string, string> = {
   canada: "Canada", canadian: "Canada", australia: "Australia", australian: "Australia", "new zealand": "New Zealand",
   switzerland: "Switzerland", swiss: "Switzerland", sweden: "Sweden", swedish: "Sweden", norway: "Norway", denmark: "Denmark", finland: "Finland",
   hungary: "Hungary", hungarian: "Hungary", poland: "Poland", polish: "Poland", czech: "Czechia", czechia: "Czechia", austria: "Austria", belgium: "Belgium", ireland: "Ireland",
-  uzbekistan: "Uzbekistan", tashkent: "Uzbekistan", uzbek: "Uzbekistan", kazakhstan: "Kazakhstan", taiwan: "Taiwan", qatar: "Qatar", "saudi arabia": "Saudi Arabia", india: "India", russia: "Russia", estonia: "Estonia", portugal: "Portugal",
+  uzbekistan: "Uzbekistan", tashkent: "Uzbekistan", uzbek: "Uzbekistan", kazakhstan: "Kazakhstan", taiwan: "Taiwan", qatar: "Qatar", "saudi arabia": "Saudi Arabia", india: "India", russia: "Russia", estonia: "Estonia", portugal: "Portugal", argentina: "Argentina", brazil: "Brazil", chile: "Chile", mexico: "Mexico", "south africa": "South Africa", indonesia: "Indonesia", "saudi": "Saudi Arabia", finnish: "Finland", taiwanese: "Taiwan",
 };
 
 const TYPE_WORDS: [RegExp, OpportunityType][] = [

@@ -1,6 +1,7 @@
 import type { Opportunity } from "@/lib/types";
 import { extraOpportunities } from "./opportunities-extra";
 import { moreOpportunities } from "./opportunities-more";
+import { jobOpportunities } from "./opportunities-jobs";
 import { deadline, src } from "./sources";
 
 /*
@@ -1109,7 +1110,7 @@ const baseOpportunities: Opportunity[] = [
   },
 ];
 
-export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities, ...moreOpportunities];
+export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities, ...moreOpportunities, ...jobOpportunities];
 
 const bySlug = new Map(opportunities.map((o) => [o.slug, o]));
 

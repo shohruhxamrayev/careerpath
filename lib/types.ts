@@ -23,7 +23,10 @@ export type Region =
   | "Southeast Asia"
   | "Central Asia"
   | "Middle East"
-  | "Oceania";
+  | "Oceania"
+  | "South Asia"
+  | "Latin America"
+  | "Africa";
 
 export type DegreeLevel = "undergraduate" | "masters" | "phd";
 export type StudentLevel = "high-school" | "undergraduate" | "masters" | "phd" | "graduate";
