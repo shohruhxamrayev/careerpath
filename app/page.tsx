@@ -61,7 +61,7 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-40 top-40 h-[480px] w-[640px] rounded-full bg-peri/[0.09] blur-[130px]" aria-hidden />
         <div className="container relative grid items-center gap-6 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:gap-4 lg:pb-20 lg:pt-20">
           <div className="relative z-10 max-w-[620px]">
-            <Link href="/occupations" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
+            <Link href="/careers" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
               <span className="rounded-full bg-mint px-2 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-night-900">New</span>
               {occupations.length.toLocaleString("en")} occupations, live jobs and 25,000+ courses
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
@@ -171,7 +171,7 @@ export default function Home() {
               <h3 className="mt-3 text-[18px] font-semibold !text-ink">Ask anything about your plan</h3>
               <p className="mt-1.5 text-[13.5px] text-ink-3">“What scholarships am I eligible for?” — answered from verified data.</p>
             </Link>
-            <Link href="/occupations" className="group card card-hover relative overflow-hidden p-6 md:col-span-3">
+            <Link href="/careers" className="group card card-hover relative overflow-hidden p-6 md:col-span-3">
               <div className="flex items-center gap-2 text-brand-600"><Users className="h-5 w-5" /><span className="eyebrow !text-brand-600">Every occupation</span></div>
               <h3 className="display mt-3 text-[26px] leading-tight !text-ink">{occupations.length.toLocaleString("en")} jobs, explained.</h3>
               <p className="mt-1.5 max-w-md text-[13.5px] text-ink-3">From nurses and pilots to data scientists and chefs, in {OCC_FAMILIES.length} career families: daily tasks, skills, education, pay and job growth to 2035. Data from O*NET and the U.S. Bureau of Labor Statistics.</p>
@@ -219,7 +219,7 @@ export default function Home() {
             </p>
             <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
               <Link href="/careers" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">Explore guided careers <ArrowRight className="h-4 w-4" /></Link>
-              <Link href="/occupations" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">All {occupations.length.toLocaleString("en")} occupations <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/careers" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">All {occupations.length.toLocaleString("en")} occupations <ArrowRight className="h-4 w-4" /></Link>
             </div>
           </div>
           <div className="relative h-[440px] sm:h-[520px]">

@@ -4,7 +4,8 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { SectionNav } from "@/components/detail";
 import { Badge } from "@/components/ui";
-import { getOccupation, getOccupationByCode, JOB_ZONES, money, occupations, onetUrl, RIASEC, type Occupation } from "@/lib/data/occupations";
+import { getCareer } from "@/lib/data/careers";
+import { getOccupation, getOccupationByCode, guidedCareerFor, JOB_ZONES, money, occupations, onetUrl, RIASEC, type Occupation } from "@/lib/data/occupations";
 
 export function generateStaticParams() {
   return occupations.map((o) => ({ slug: o.slug }));
@@ -62,6 +63,8 @@ export default function OccupationPage({ params }: { params: { slug: string } })
   if (!o) notFound();
   const b = o.bls;
   const related = o.related.map(getOccupationByCode).filter((x): x is Occupation => !!x);
+  const guidedSlug = guidedCareerFor(o.code);
+  const guided = guidedSlug ? getCareer(guidedSlug) : undefined;
   const shared = b && b.soc !== o.code.slice(0, 7);
   const q = encodeURIComponent(o.title.replace(/,.*$/, "").replace(/s$/, ""));
 
@@ -69,8 +72,8 @@ export default function OccupationPage({ params }: { params: { slug: string } })
     <>
       <div className="night-band">
         <div className="container py-8">
-          <Link href="/occupations" className="inline-flex items-center gap-1.5 text-[13px] text-night-300 hover:text-white">
-            <ArrowLeft className="h-3.5 w-3.5" /> All occupations
+          <Link href="/careers" className="inline-flex items-center gap-1.5 text-[13px] text-night-300 hover:text-white">
+            <ArrowLeft className="h-3.5 w-3.5" /> All careers
           </Link>
           <p className="eyebrow mt-5">{o.family}</p>
           <h1 className="display mt-2 text-[32px] leading-[1.1] sm:text-[42px]">{o.title}</h1>
@@ -167,6 +170,13 @@ export default function OccupationPage({ params }: { params: { slug: string } })
         </div>
 
         <aside className="space-y-4 lg:sticky lg:top-28 lg:self-start">
+          {guided && (
+            <Link href={`/careers/${guided.slug}`} className="card card-hover block border-brand-200 bg-brand-50 p-5">
+              <p className="eyebrow !text-brand-600">Guided path</p>
+              <p className="mt-1 text-[15px] font-semibold">{guided.title}</p>
+              <p className="mt-1 text-[13px] text-ink-2">Step-by-step plan: education routes, entry roles, competitions, internships and your Career Match →</p>
+            </Link>
+          )}
           <div className="card p-5">
             <h2 className="mb-3 text-[15px] font-semibold">Get started</h2>
             <ul className="space-y-2 text-[13.5px]">

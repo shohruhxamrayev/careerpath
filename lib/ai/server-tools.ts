@@ -168,7 +168,7 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
   const limit = Math.min(Number(input?.limit) || 8, 15);
   switch (name) {
     case "search_occupations":
-      return { explorer: "/occupations", source: "O*NET 31.0 (US DOL, CC BY 4.0) + BLS Employment Projections 2025–35 (US figures)", results: searchOccupations(String(input?.query ?? ""), { limit }).map(occBrief) };
+      return { explorer: "/careers", source: "O*NET 31.0 (US DOL, CC BY 4.0) + BLS Employment Projections 2025–35 (US figures)", results: searchOccupations(String(input?.query ?? ""), { limit }).map(occBrief) };
     case "get_occupation": {
       const n = String(input?.name ?? "");
       const o = getOccupationByCode(n) ?? searchOccupations(n, { limit: 1 })[0];

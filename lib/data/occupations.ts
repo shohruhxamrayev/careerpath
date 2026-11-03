@@ -102,3 +102,4 @@ export function jobFromQuestion(s: string): string | null {
   const q = m[1].replace(/\b(good|successful|professional|certified|licensed)\b/g, "").trim();
   return q.length >= 3 && !/^(it|that|this|career|job|good|you|me|i)$/.test(q) ? q : null;
 }
+export const guidedCareerFor = (code: string) => Object.entries(CAREER_OCCUPATIONS).find(([, codes]) => codes.includes(code))?.[0];
