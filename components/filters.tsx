@@ -25,7 +25,9 @@ export function useUrlFilters<T extends Record<string, string>>(defaults: T) {
 
   // Write state → URL (debounced).
   useEffect(() => {
+    // Keep URL params this hook doesn't manage (e.g. ?view=guided on /careers).
     const sp = new URLSearchParams();
+    params.forEach((v, k) => { if (!(k in defaults)) sp.set(k, v); });
     for (const [k, v] of Object.entries(state)) if (v && v !== defaults[k]) sp.set(k, v);
     const qs = sp.toString();
     if (qs === lastQs.current) return;
