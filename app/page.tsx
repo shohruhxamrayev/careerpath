@@ -1,5 +1,5 @@
 import { qsLabel } from "@/lib/utils";
-import { ArrowRight, BadgeCheck, Bot, Briefcase, CalendarCheck, Compass, Globe2, GraduationCap, ShieldCheck } from "lucide-react";
+import { Award, ArrowRight, BadgeCheck, BookOpen, Bot, Briefcase, CalendarCheck, Compass, Globe2, GraduationCap, Radio, ShieldCheck, Users } from "lucide-react";
 import Link from "next/link";
 import { CareerConstellation } from "@/components/home/CareerConstellation";
 import { HeroGlobe } from "@/components/home/HeroGlobe";
@@ -11,6 +11,8 @@ import { getOpportunity, opportunities } from "@/lib/data/opportunities";
 import { skills } from "@/lib/data/skills";
 import { OPPORTUNITY_TYPE_PLURAL, OPPORTUNITY_TYPES } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
+import { certifications } from "@/lib/data/certifications";
+import { OCC_FAMILIES, occupations } from "@/lib/data/occupations";
 import { buildRecommendations } from "@/lib/matching/recommend";
 
 export default function Home() {
@@ -59,9 +61,9 @@ export default function Home() {
         <div className="pointer-events-none absolute -right-40 top-40 h-[480px] w-[640px] rounded-full bg-peri/[0.09] blur-[130px]" aria-hidden />
         <div className="container relative grid items-center gap-6 pb-14 pt-12 sm:pt-16 lg:grid-cols-[1.02fr_1fr] lg:gap-4 lg:pb-20 lg:pt-20">
           <div className="relative z-10 max-w-[620px]">
-            <Link href="/roadmap" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
+            <Link href="/occupations" className="group inline-flex items-center gap-2 rounded-full border border-white/10 bg-white/[0.04] py-1 pl-1 pr-3 text-[12.5px] text-night-200 backdrop-blur hover:border-mint/40">
               <span className="rounded-full bg-mint px-2 py-0.5 font-mono text-[10.5px] font-semibold uppercase tracking-wider text-night-900">New</span>
-              Roadmap — your month-by-month plan to day one
+              {occupations.length.toLocaleString("en")} occupations, live jobs and 25,000+ courses
               <ArrowRight className="h-3.5 w-3.5 transition-transform group-hover:translate-x-0.5" />
             </Link>
             <h1 className="display mt-6 text-[48px] leading-[0.98] sm:text-[68px] lg:text-[78px]">
@@ -71,11 +73,12 @@ export default function Home() {
               Discover universities, scholarships, competitions, internships, and career paths matched to your goals, education, skills, and interests.
             </p>
             <HomeCTA />
-            <dl className="mt-10 grid max-w-[520px] grid-cols-3 gap-4 border-t border-white/[0.08] pt-6">
+            <dl className="mt-10 grid max-w-[560px] grid-cols-2 gap-4 border-t border-white/[0.08] pt-6 sm:grid-cols-4">
               {[
-                [universities.length, "universities"],
+                [universities.length.toLocaleString("en"), "universities"],
                 [opportunities.length, "opportunities"],
-                [countries, "countries"],
+                [occupations.length.toLocaleString("en"), "occupations"],
+                ["25k+", "online courses"],
               ].map(([n, l]) => (
                 <div key={String(l)}>
                   <dt className="sr-only">{l}</dt>
@@ -155,7 +158,7 @@ export default function Home() {
             </Link>
             <Link href="/careers" className="group card card-hover p-6 md:col-span-2">
               <div className="flex items-center gap-2 text-brand-600"><Briefcase className="h-5 w-5" /><span className="eyebrow !text-brand-600">Careers</span></div>
-              <h3 className="mt-3 text-[18px] font-semibold !text-ink">{careers.length} career paths · {skills.length} skills</h3>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">{careers.length} guided paths · {skills.length} skills</h3>
               <p className="mt-1.5 text-[13.5px] text-ink-3">What the job is, the skills it needs, and the opportunities that lead into it.</p>
             </Link>
             <Link href="/planner" className="group card card-hover p-6 md:col-span-2">
@@ -167,6 +170,36 @@ export default function Home() {
               <div className="flex items-center gap-2 text-brand-600"><Bot className="h-5 w-5" /><span className="eyebrow !text-brand-600">Path Assistant</span></div>
               <h3 className="mt-3 text-[18px] font-semibold !text-ink">Ask anything about your plan</h3>
               <p className="mt-1.5 text-[13.5px] text-ink-3">“What scholarships am I eligible for?” — answered from verified data.</p>
+            </Link>
+            <Link href="/occupations" className="group card card-hover relative overflow-hidden p-6 md:col-span-3">
+              <div className="flex items-center gap-2 text-brand-600"><Users className="h-5 w-5" /><span className="eyebrow !text-brand-600">Every occupation</span></div>
+              <h3 className="display mt-3 text-[26px] leading-tight !text-ink">{occupations.length.toLocaleString("en")} jobs, explained.</h3>
+              <p className="mt-1.5 max-w-md text-[13.5px] text-ink-3">From nurses and pilots to data scientists and chefs, in {OCC_FAMILIES.length} career families: daily tasks, skills, education, pay and job growth to 2035. Data from O*NET and the U.S. Bureau of Labor Statistics.</p>
+              <div className="mt-4 flex flex-wrap gap-1.5">
+                {["Registered Nurses", "Software Developers", "Airline Pilots", "Chefs", "Lawyers", "Electricians"].map((t) => <span key={t} className="rounded-full border border-line bg-paper px-2.5 py-1 text-[12px] text-ink-2">{t}</span>)}
+              </div>
+              <span className="mt-4 inline-flex items-center gap-1 text-[13.5px] font-medium text-brand-700">Explore all occupations <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
+            </Link>
+            <Link href="/jobs" className="group card card-hover p-6 md:col-span-3">
+              <div className="flex items-center gap-2 text-brand-600"><Radio className="h-5 w-5" /><span className="eyebrow !text-brand-600">Live jobs</span></div>
+              <h3 className="display mt-3 text-[26px] leading-tight !text-ink">Internships open right now.</h3>
+              <p className="mt-1.5 max-w-md text-[13.5px] text-ink-3">Hundreds of current internships and entry-level jobs from The Muse, Arbeitnow and Jobicy, refreshed every few hours. Each one opens the original posting.</p>
+              <span className="mt-4 inline-flex items-center gap-1 text-[13.5px] font-medium text-brand-700">Browse live jobs <ArrowRight className="h-4 w-4 transition-transform group-hover:translate-x-0.5" /></span>
+            </Link>
+            <Link href="/courses" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><BookOpen className="h-5 w-5" /><span className="eyebrow !text-brand-600">Online courses</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">25,000+ Coursera courses</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">From Stanford, Yale, Google, IBM and more — searchable by subject and language.</p>
+            </Link>
+            <Link href="/certifications" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><Award className="h-5 w-5" /><span className="eyebrow !text-brand-600">Certifications</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">{certifications.length} industry certifications</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">AWS, Google, CFA, ACCA, PMP and more, with real costs and the careers they help.</p>
+            </Link>
+            <Link href="/opportunities?em=1" className="group card card-hover p-6 md:col-span-2">
+              <div className="flex items-center gap-2 text-brand-600"><GraduationCap className="h-5 w-5" /><span className="eyebrow !text-brand-600">Erasmus Mundus</span></div>
+              <h3 className="mt-3 text-[18px] font-semibold !text-ink">{opportunities.filter((o) => o.slug.startsWith("em-")).length} EU master&apos;s programmes</h3>
+              <p className="mt-1.5 text-[13.5px] text-ink-3">Every programme in the European Commission&apos;s official catalogue, with scholarships for top applicants.</p>
             </Link>
           </div>
         </div>
@@ -184,7 +217,10 @@ export default function Home() {
             <p className="mt-5 text-[16px] leading-relaxed text-night-300">
               {careers.length} careers orbit the skills that link them. Hover a career to light up what it needs; click to open its full guide. When you&apos;re signed in, every node shows your Career Match.
             </p>
-            <Link href="/careers" className="mt-8 inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">Explore all careers <ArrowRight className="h-4 w-4" /></Link>
+            <div className="mt-8 flex flex-wrap gap-x-6 gap-y-2">
+              <Link href="/careers" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">Explore guided careers <ArrowRight className="h-4 w-4" /></Link>
+              <Link href="/occupations" className="inline-flex items-center gap-1.5 text-[14px] font-medium text-mint hover:underline">All {occupations.length.toLocaleString("en")} occupations <ArrowRight className="h-4 w-4" /></Link>
+            </div>
           </div>
           <div className="relative h-[440px] sm:h-[520px]">
             <CareerConstellation className="h-full w-full" />
