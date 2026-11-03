@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { useEffect, useMemo, useState } from "react";
-import { opportunities } from "@/lib/data/opportunities";
+import { curatedOpportunities as opportunities } from "@/lib/data/opportunities";
 import { OPPORTUNITY_TYPE_PLURAL } from "@/lib/data/taxonomy";
 
 const MONTHS = ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"];

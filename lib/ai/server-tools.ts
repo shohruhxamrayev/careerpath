@@ -9,6 +9,8 @@ import { isProfileReady, profileCompletion } from "@/lib/matching/profile";
 import { buildRecommendations } from "@/lib/matching/recommend";
 import type { DegreeLevel, Field, OpportunityType, StudentProfile } from "@/lib/types";
 import { monthsAhead } from "@/lib/utils";
+import { filterLiveJobs, getLiveJobs } from "@/lib/live/jobs";
+import { getCourses, searchCourses } from "@/lib/live/courses";
 
 /* Tool definitions + executors for the AI advisor (Claude tool use). Server-only. */
 
@@ -91,9 +93,38 @@ export const AI_TOOLS = [
     description: "Opportunities and university deadlines typically falling within the next N months, plus deadlines from the student's planner.",
     input_schema: { type: "object", properties: { months: { type: "number" } } },
   },
+  {
+    name: "search_courses",
+    description: "Search Coursera's full catalogue (25,000+ courses from universities and companies) by keywords, subject and language. Use when the student asks for courses or how to learn a skill online. Return course names with their coursera.org links; the finder is at /courses.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Skill or topic, e.g. 'python', 'machine learning', 'financial accounting'" },
+        domain: { type: "string", enum: ["computer-science", "data-science", "information-technology", "business", "physical-science-and-engineering", "life-sciences", "social-sciences", "arts-and-humanities", "math-and-logic", "personal-development", "language-learning"] },
+        language: { type: "string", description: "ISO code, e.g. 'en', 'es', 'ru'" },
+        limit: { type: "number" },
+      },
+    },
+  },
+  {
+    name: "search_live_jobs",
+    description: "Search LIVE internship and entry-level job postings (refreshed every few hours from The Muse, Arbeitnow and Jobicy). Use when the student wants current/open internships or first jobs to apply to now. Each result has the original posting URL — always give it. The full board is at /jobs.",
+    input_schema: {
+      type: "object",
+      properties: {
+        query: { type: "string", description: "Keywords matched against title, company and category, e.g. 'data', 'marketing', 'software'" },
+        level: { type: "string", enum: ["internship", "entry"] },
+        remote: { type: "boolean" },
+        location: { type: "string", description: "Substring of the location, e.g. 'Berlin', 'London', 'New York'" },
+        limit: { type: "number" },
+      },
+    },
+  },
 ] as const;
 
 export const TOOL_LABELS: Record<string, string> = {
+  search_live_jobs: "Checking live job boards",
+  search_courses: "Searching 25,000+ courses",
   search_universities: "Searching universities",
   get_university: "Reading university profile",
   compare_universities: "Comparing universities",
@@ -121,6 +152,16 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
   const p = profile && isProfileReady(profile) ? profile : null;
   const limit = Math.min(Number(input?.limit) || 8, 15);
   switch (name) {
+    case "search_courses":
+      return getCourses().then((all) => {
+        const r = searchCourses(all, { q: input?.query, domain: input?.domain, lang: input?.language, limit });
+        return { finder: `/courses${input?.query ? `?q=${encodeURIComponent(input.query)}` : ""}`, totalMatches: r.total, results: r.results.map((c) => ({ name: c.name, by: c.partner, workload: c.workload, language: c.lang, certificate: c.certificate, url: c.url })) };
+      });
+    case "search_live_jobs":
+      return getLiveJobs().then(({ jobs, fetchedAt }) => {
+        const rows = filterLiveJobs(jobs, { query: input?.query, level: input?.level, remote: !!input?.remote, location: input?.location, limit });
+        return { fetchedAt, totalLive: jobs.length, board: "/jobs", results: rows.map((j) => ({ title: j.title, company: j.company, location: j.location, level: j.level, posted: j.posted.slice(0, 10), url: j.url, source: j.source })) };
+      });
     case "search_universities": {
       const rows = searchUniversities({
         query: input.query, countries: input.countries, regions: input.regions, fields: input.fields as Field[], level: input.level as DegreeLevel,
@@ -175,7 +216,7 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
       const m = Math.min(Math.max(Number(input?.months) || 3, 1), 12);
       return {
         planner: planner.filter((a) => a.deadline),
-        opportunities: opportunities.filter((o) => (monthsAhead(o.deadline.months) ?? 99) < m && o.deadline.months.length < 12).slice(0, 20).map((o) => ({ title: o.title, url: `/opportunities/${o.slug}`, timing: o.deadline.timing })),
+        opportunities: opportunities.filter((o) => !o.slug.startsWith("em-") && (monthsAhead(o.deadline.months) ?? 99) < m && o.deadline.months.length < 12).slice(0, 20).map((o) => ({ title: o.title, url: `/opportunities/${o.slug}`, timing: o.deadline.timing })),
         universities: universities.filter((u) => u.deadlines.some((d) => (monthsAhead(d.months) ?? 99) < m)).slice(0, 20).map((u) => ({ name: u.name, url: `/universities/${u.slug}`, deadlines: u.deadlines.filter((d) => (monthsAhead(d.months) ?? 99) < m).map((d) => `${d.label}: ${d.timing}`) })),
       };
     }

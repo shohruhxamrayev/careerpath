@@ -2,7 +2,7 @@
 
 import { Compass, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { OpportunityCard } from "@/components/cards";
 import { FilterPanel, FilterSelect, FilterToggle, SearchInput, useUrlFilters } from "@/components/filters";
 import { Button, Chip, EmptyState } from "@/components/ui";
@@ -13,7 +13,10 @@ import { isProfileReady } from "@/lib/matching/profile";
 import { useApp } from "@/lib/store/AppProvider";
 import { monthsAhead } from "@/lib/utils";
 
-const DEFAULTS = { q: "", type: "", country: "", format: "", funded: "", level: "", field: "", deadline: "", eligible: "", sort: "" };
+const DEFAULTS = { q: "", type: "", country: "", format: "", funded: "", level: "", field: "", deadline: "", eligible: "", sort: "", em: "" };
+const isEM = (slug: string) => slug.startsWith("em-");
+const EM_COUNT = opportunities.filter((o) => isEM(o.slug)).length;
+const PAGE = 48;
 const HOSTS = Array.from(new Set(opportunities.flatMap((o) => o.hostCountries))).sort();
 const COUNTS = Object.fromEntries(OPPORTUNITY_TYPES.map((t) => [t, opportunities.filter((o) => o.type === t).length]));
 
@@ -28,6 +31,7 @@ export function OpportunityDirectory() {
     list = list.filter(({ o, m }) => {
       if (q && ![o.title, o.organization, o.summary, o.location, ...o.tags].join(" ").toLowerCase().includes(q)) return false;
       if (f.type && o.type !== f.type) return false;
+      if (f.em && !isEM(o.slug)) return false;
       if (f.country === "worldwide" && o.hostCountries.length > 0) return false;
       if (f.country && f.country !== "worldwide" && !o.hostCountries.includes(f.country)) return false;
       if (f.format === "online" && o.format === "in-person") return false;
@@ -42,26 +46,41 @@ export function OpportunityDirectory() {
       return true;
     });
     const sort = f.sort || (personalised ? "match" : "deadline");
+    // The 200+ individual Erasmus Mundus programmes sit after hand-researched entries unless asked for.
+    const emLast = (a: { o: { slug: string } }, b: { o: { slug: string } }) => (f.em || q ? 0 : Number(isEM(a.o.slug)) - Number(isEM(b.o.slug)));
     list.sort((a, b) =>
-      sort === "match"
+      emLast(a, b) ||
+      (sort === "match"
         ? (b.m?.score ?? 0) - (a.m?.score ?? 0)
         : sort === "name"
           ? a.o.title.localeCompare(b.o.title)
-          : (monthsAhead(a.o.deadline.months) ?? 99) - (monthsAhead(b.o.deadline.months) ?? 99) || a.o.title.localeCompare(b.o.title),
+          : (monthsAhead(a.o.deadline.months) ?? 99) - (monthsAhead(b.o.deadline.months) ?? 99) || a.o.title.localeCompare(b.o.title)),
     );
     return list;
   }, [f, personalised, data]);
+  const [shown, setShown] = useState(PAGE);
+  useEffect(() => setShown(PAGE), [f]);
 
   return (
     <div className="container py-8">
       <div className="scrollbar-none -mx-4 mb-6 flex gap-2 overflow-x-auto px-4 pb-1" role="group" aria-label="Opportunity type">
-        <Chip active={!f.type} onClick={() => set("type", "")}>All <span className="font-mono text-[11px] text-ink-4">{opportunities.length}</span></Chip>
+        <Chip active={!f.type && !f.em} onClick={() => { set("type", ""); set("em", ""); }}>All <span className="font-mono text-[11px] text-ink-4">{opportunities.length}</span></Chip>
         {OPPORTUNITY_TYPES.filter((t) => COUNTS[t] > 0).map((t) => (
           <Chip key={t} active={f.type === t} onClick={() => set("type", f.type === t ? "" : t)}>
             {OPPORTUNITY_TYPE_PLURAL[t]} <span className="font-mono text-[11px] text-ink-4">{COUNTS[t]}</span>
           </Chip>
         ))}
+        <Chip active={!!f.em} onClick={() => set("em", f.em ? "" : "1")}>
+          Erasmus Mundus masters <span className="font-mono text-[11px] text-ink-4">{EM_COUNT}</span>
+        </Chip>
       </div>
+
+      {f.em && (
+        <p className="mb-6 rounded-md border border-line bg-surface px-4 py-3 text-[13px] text-ink-3">
+          All {EM_COUNT} joint master&apos;s programmes in the European Commission&apos;s official{" "}
+          <a href="https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en" target="_blank" rel="noopener noreferrer" className="text-brand-700 hover:underline">Erasmus Mundus Catalogue</a>. Each consortium sets its own deadline and decides whether it still has EU scholarships, so check the programme site before applying.
+        </p>
+      )}
 
       {!personalised && (
         <div className="mb-6 flex flex-col gap-3 rounded-md border border-brand-100 bg-brand-50 px-4 py-3 sm:flex-row sm:items-center sm:justify-between">
@@ -100,7 +119,12 @@ export function OpportunityDirectory() {
             <EmptyState icon={<Compass />} title="No results found." body="Try a broader search or remove some filters." action={<Button variant="secondary" onClick={() => { reset(); set("q", ""); set("type", ""); }}>Clear search and filters</Button>} />
           ) : (
             <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {rows.map(({ o, m }) => <OpportunityCard key={o.slug} o={o} match={m} />)}
+              {rows.slice(0, shown).map(({ o, m }) => <OpportunityCard key={o.slug} o={o} match={m} />)}
+            </div>
+          )}
+          {rows.length > shown && (
+            <div className="mt-6 flex justify-center">
+              <Button variant="secondary" onClick={() => setShown((n) => n + PAGE)}>Show more ({rows.length - shown} left)</Button>
             </div>
           )}
         </div>

@@ -16,6 +16,7 @@ export const NAV = [
   { href: "/", label: "Home" },
   { href: "/universities", label: "Universities" },
   { href: "/opportunities", label: "Opportunities" },
+  { href: "/jobs", label: "Live jobs" },
   { href: "/careers", label: "Careers" },
   { href: "/for-you", label: "For You" },
   { href: "/roadmap", label: "Roadmap" },
@@ -186,7 +187,7 @@ export function Navbar() {
             </div>
             <nav aria-label="Mobile" className="flex-1 overflow-y-auto p-3">
               <ul className="space-y-0.5">
-                {[...NAV, { href: "/certifications", label: "Certifications" }, { href: "/compare", label: "Compare universities" }, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
+                {[...NAV, { href: "/courses", label: "Online courses" }, { href: "/certifications", label: "Certifications" }, { href: "/compare", label: "Compare universities" }, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
                   <li key={n.href}>
                     <Link
                       href={n.href}

@@ -1,5 +1,5 @@
 import { careers } from "@/lib/data/careers";
-import { opportunities } from "@/lib/data/opportunities";
+import { curatedOpportunities as opportunities } from "@/lib/data/opportunities";
 import { getSkill } from "@/lib/data/skills";
 import { universities } from "@/lib/data/universities";
 import type { Career, Opportunity, OpportunityType, Skill, StudentProfile, University } from "@/lib/types";

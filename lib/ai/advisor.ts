@@ -103,7 +103,7 @@ export function advise(question: string, profile: StudentProfile | null, applica
     const career = e.careers[0];
     const list = (career ? certifications.filter((c) => c.careers.includes(career.slug)) : certifications.filter((c) => !/Languages/.test(c.category))).slice(0, 7);
     return {
-      text: `### Certifications${career ? ` for ${career.title}` : " worth considering"}\n${list.map((c) => `- **${c.name}** (${c.provider}) — ${c.level}, ${c.duration}. **Cost:** ${c.cost.display}${c.cost.status === "verified" ? " ✓" : ""}. ${c.why}`).join("\n")}\n\nEmployers value a certificate most when it's paired with a project that uses the skill. Browse all of them with filters on [Certifications](/certifications${career ? `?career=${career.slug}` : ""}).`,
+      text: `### Certifications${career ? ` for ${career.title}` : " worth considering"}\n${list.map((c) => `- **${c.name}** (${c.provider}) — ${c.level}, ${c.duration}. **Cost:** ${c.cost.display}${c.cost.status === "verified" ? " ✓" : ""}. ${c.why}`).join("\n")}\n\nEmployers value a certificate most when it's paired with a project that uses the skill. Browse all of them with filters on [Certifications](/certifications${career ? `?career=${career.slug}` : ""}), or search 25,000+ online courses in [Courses](/courses${career ? `?q=${encodeURIComponent(career.title)}` : ""}).`,
       suggestions: ["Free certifications for data analysis", "What skills should I build?", "What career fits my interests?"],
     };
   }
@@ -349,7 +349,7 @@ function opportunityList(e: Entities, p: StudentProfile | null, nudge: string): 
   const desc = [e.funded ? "fully funded" : null, noun, e.school ? "for high school students" : e.level ? `for ${e.level === "masters" ? "master's" : e.level} students` : null, e.fields.length ? `in ${e.fields.map((f) => FIELD_LABELS[f]).join(" / ")}` : null, e.countries.length ? `in ${e.countries.join(", ")}` : null].filter(Boolean).join(" ");
   if (!rows.length) return { text: `I couldn't find ${desc} in CareerPath's dataset. Try removing one condition, or browse [Opportunities](/opportunities).${nudge}`, suggestions: followUpsFor(e.types[0]) };
   return {
-    text: `### ${desc[0].toUpperCase() + desc.slice(1)}\n\n${rows.map(({ o, m }) => `- **${oLink(o)}** — ${o.summary} _${o.deadline.timing}._${m ? (m.eligible === false ? " ✗ Not eligible on your profile." : ` **${m.score}% match**.`) : ""}`).join("\n")}\n\nDeadlines are typical windows from previous cycles — confirm each on the official site.${nudge}`,
+    text: `### ${desc[0].toUpperCase() + desc.slice(1)}\n\n${rows.map(({ o, m }) => `- **${oLink(o)}** — ${o.summary} _${o.deadline.timing}._${m ? (m.eligible === false ? " ✗ Not eligible on your profile." : ` **${m.score}% match**.`) : ""}`).join("\n")}\n\nDeadlines are typical windows from previous cycles — confirm each on the official site.${e.types.some((t) => t === "internship" || t === "job") ? "\n\nFor postings open right now, browse [Live jobs & internships](/jobs) — refreshed every few hours." : ""}${nudge}`,
     suggestions: [rows.length >= 2 ? `Compare ${short(rows[0].o.title)} vs ${short(rows[1].o.title)}` : "What scholarships am I eligible for?", ...followUpsFor(e.types[0]).slice(0, 2)],
   };
 }
@@ -363,7 +363,7 @@ function followUpsFor(t: OpportunityType): string[] {
 
 function listForMe(p: StudentProfile | null, types: OpportunityType[], noun: string) {
   if (!p) {
-    const list = opportunities.filter((o) => types.includes(o.type)).sort((a, b) => (monthsAhead(a.deadline.months) ?? 99) - (monthsAhead(b.deadline.months) ?? 99)).slice(0, 6);
+    const list = opportunities.filter((o) => types.includes(o.type) && !o.slug.startsWith("em-")).sort((a, b) => (monthsAhead(a.deadline.months) ?? 99) - (monthsAhead(b.deadline.months) ?? 99)).slice(0, 6);
     return `### ${noun[0].toUpperCase() + noun.slice(1)} with upcoming deadlines\n${list.map((o) => `- **${oLink(o)}** — ${o.summary} _${o.deadline.timing}._`).join("\n")}`;
   }
   const ranked = rankOpportunities(p, types);

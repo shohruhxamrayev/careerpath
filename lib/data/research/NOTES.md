@@ -69,3 +69,10 @@ Note: TOEFL iBT moved to a 1–6 band scale for tests from January 2026; many un
 - All 1,504 ranked institutions read from the QS rankings endpoint behind https://www.topuniversities.com/world-university-rankings (nid 4153156): name, city, country, rank label and indicator scores (academic reputation, employer reputation, employment outcomes, faculty–student ratio, international students, citations, sustainability, overall).
 - 205 matched to existing researched profiles (official rank + indicators added); the rest become "basic" profiles. Coordinates are approximate city locations from the open GeoNames-based `all-the-cities` dataset.
 - Basic-profile descriptions are written by CareerPath from the facts above (QS text is not copied). Costs/requirements are country-typical estimates, labelled unverified.
+
+
+## Nov 2026 — catalogue imports and live sources
+
+- **Erasmus Mundus**: all 218 entries in the official EACEA Erasmus Mundus Catalogue (https://www.eacea.ec.europa.eu/scholarships/erasmus-mundus-catalogue_en) were read page by page; the 7 Intra-Africa mobility projects (no Erasmus+ project page, African nationals only) were excluded, leaving 211 Joint Masters in `erasmus-mundus-2026.json` (acronym, title, official website, Erasmus+ project page). Fields are inferred from titles; funding is marked "varies" because the catalogue notes some programmes no longer award EU scholarships.
+- **Live jobs** (`lib/live/jobs.ts`, `/jobs`): The Muse public API (Internship + Entry Level), Arbeitnow job-board API (filtered to student/intern/junior titles) and Jobicy remote API (entry level). Cached 6 hours; every card links to and credits the original posting. Remotive was skipped (only 10 delayed jobs, terms discourage re-listing).
+- **Courses** (`lib/live/courses.ts`, `/courses`): Coursera public catalogue API `courses.v1` (25,494 courses on 3 Nov 2026), fetched in pages of 1,000 and cached 24 hours. The API has no search endpoint, so search runs server-side.

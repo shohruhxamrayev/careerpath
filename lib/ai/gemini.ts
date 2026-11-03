@@ -139,12 +139,11 @@ export async function runGemini(opts: {
     if (!calls.length) break;
 
     contents.push({ role: "model", parts: modelParts });
-    contents.push({
-      role: "user",
-      parts: calls.map((c) => {
+    const parts = await Promise.all(
+      calls.map(async (c) => {
         let result: unknown;
         try {
-          result = runTool(c.name, c.args, opts.profile, opts.planner);
+          result = await runTool(c.name, c.args, opts.profile, opts.planner);
         } catch {
           result = { error: "Tool failed" };
         }
@@ -152,7 +151,8 @@ export async function runGemini(opts: {
         const json = JSON.stringify(result);
         return { functionResponse: { name: c.name, response: { result: json.length > 24000 ? JSON.parse(JSON.stringify(result, (_k, v) => (typeof v === "string" && v.length > 300 ? v.slice(0, 300) + "…" : v))) : result } } };
       }),
-    });
+    );
+    contents.push({ role: "user", parts });
     if (produced) opts.send({ t: "delta", text: "\n\n" });
   }
   return produced;

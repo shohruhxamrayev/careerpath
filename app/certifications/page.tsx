@@ -15,7 +15,7 @@ export default function CertificationsPage() {
         title="Skills employers"
         accent="can verify."
         description={`${certifications.length} certifications and courses from AWS, Google, Microsoft, CFA Institute, ACCA, PMI, Harvard and more — ${free} of them free. Each shows cost, time and the careers it helps.`}
-        actions={<ButtonLink href="/careers" variant="nightOutline">Explore careers</ButtonLink>}
+        actions={<ButtonLink href="/courses" variant="nightOutline">Browse 25,000+ courses</ButtonLink>}
       />
       <Suspense fallback={<div className="container py-8"><div className="skeleton h-60" /></div>}>
         <CertificationDirectory />

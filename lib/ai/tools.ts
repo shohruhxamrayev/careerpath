@@ -233,7 +233,11 @@ export function searchOpportunities(f: OppFilters, profile?: StudentProfile | nu
     })
     .map((o) => ({ o, m: ready ? matchOpportunity(profile!, o) : null }))
     .filter((x) => !f.eligibleOnly || x.m?.eligible !== false);
+  // 200+ catalogue-imported Erasmus Mundus programmes go after hand-researched entries unless asked for.
+  const wantEM = !!q && /erasmus|mundus|em-|joint master/.test(q);
+  const em = (o: { slug: string }) => (!wantEM && !q && o.slug.startsWith("em-") ? 1 : 0);
   rows.sort((a, b) => {
+    if (em(a.o) !== em(b.o)) return em(a.o) - em(b.o);
     if (a.m && b.m) {
       const ea = a.m.eligible === false ? 0 : 1;
       const eb = b.m.eligible === false ? 0 : 1;

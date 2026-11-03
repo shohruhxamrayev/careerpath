@@ -1,4 +1,4 @@
-import { opportunities } from "@/lib/data/opportunities";
+import { curatedOpportunities as opportunities } from "@/lib/data/opportunities";
 import { universities } from "@/lib/data/universities";
 import { matchOpportunity } from "@/lib/matching/opportunity";
 import { englishAsIelts, isProfileReady } from "@/lib/matching/profile";

@@ -39,7 +39,9 @@ If the AI key is missing or a request fails, the assistant falls back to the bui
 | `/signup`, `/login`, `/reset-password` | Authentication (local or Supabase) |
 | `/profile` | Full student profile editor with completion % and missing-field list |
 | `/universities`, `/universities/[slug]` | Search, 10 filters, sorting, URL-shareable state, grid or 3D globe view; detail pages with a location globe, with sourced requirements and Profile Match |
-| `/opportunities`, `/opportunities/[slug]` | 10 opportunity types, deadline radar, filters, eligibility-only view; detail pages with rule-by-rule eligibility |
+| `/opportunities`, `/opportunities/[slug]` | 10 opportunity types, deadline radar, filters, eligibility-only view, every Erasmus Mundus Joint Master; detail pages with rule-by-rule eligibility |
+| `/jobs` | Live internships and entry-level jobs from The Muse, Arbeitnow and Jobicy public APIs (ISR, refreshed every 6 hours; each links to the original posting) |
+| `/courses`, `/api/courses` | Search Coursera's full public catalogue (25,000+ courses) by subject, language and certificate (server-side search, cached 24 hours) |
 | `/careers`, `/careers/[slug]` | Career paths with skills, routes, entry roles, resources and Career Match |
 | `/for-you` | Personalised recommendations, each with its reason, plus next steps |
 | `/roadmap` | Month-by-month plan from today to the intake: tests, essays, university and scholarship deadlines, readiness score, one-click add to planner |
@@ -71,7 +73,7 @@ supabase/schema.sql  database schema with Row Level Security
 
 ## Dataset
 
-1,517 universities in 105 countries: the full QS World University Rankings 2027 list (1,504 institutions, with official rank labels and indicator scores) plus researched profiles. 219 have researched CareerPath profiles; the rest are clearly labelled basic profiles, 166 opportunities across 10 types (including 21 jobs and graduate programmes), 26 careers and 27 certifications/courses. Research log: `lib/data/research/NOTES.md`.
+1,517 universities in 105 countries: the full QS World University Rankings 2027 list (1,504 institutions, with official rank labels and indicator scores) plus researched profiles. 219 have researched CareerPath profiles; the rest are clearly labelled basic profiles, 377 opportunities across 10 types (166 researched, including 21 jobs and graduate programmes, plus all 211 programmes in the European Commission's Erasmus Mundus Catalogue), live job listings, the Coursera course catalogue, 26 careers and 27 certifications/courses. Research log: `lib/data/research/NOTES.md`.
 
 ## Matching
 

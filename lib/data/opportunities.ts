@@ -2,6 +2,7 @@ import type { Opportunity } from "@/lib/types";
 import { extraOpportunities } from "./opportunities-extra";
 import { moreOpportunities } from "./opportunities-more";
 import { jobOpportunities } from "./opportunities-jobs";
+import { erasmusProgrammes } from "./opportunities-erasmus";
 import { deadline, src } from "./sources";
 
 /*
@@ -1110,7 +1111,10 @@ const baseOpportunities: Opportunity[] = [
   },
 ];
 
-export const opportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities, ...moreOpportunities, ...jobOpportunities];
+/** Hand-researched entries (used for recommendations, roadmaps and deadline digests). */
+export const curatedOpportunities: Opportunity[] = [...baseOpportunities, ...extraOpportunities, ...moreOpportunities, ...jobOpportunities];
+/** Everything, including every programme in the official Erasmus Mundus Catalogue. */
+export const opportunities: Opportunity[] = [...curatedOpportunities, ...erasmusProgrammes];
 
 const bySlug = new Map(opportunities.map((o) => [o.slug, o]));
 
