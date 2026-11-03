@@ -69,6 +69,17 @@ export interface DeadlineInfo {
   source: Source;
 }
 
+export interface QsScores {
+  overall: number | null;
+  academicReputation: number | null;
+  employerReputation: number | null;
+  facultyStudent: number | null;
+  internationalStudents: number | null;
+  employmentOutcomes: number | null;
+  sustainability: number | null;
+  citations: number | null;
+}
+
 export interface University {
   slug: string;
   name: string;
@@ -91,6 +102,13 @@ export interface University {
   qsRank?: number;
   /** [latitude, longitude] for the globe */
   geo?: [number, number];
+  /** Official QS 2027 rank label, e.g. "=131" or "801-850" */
+  qsDisplay?: string;
+  /** QS 2027 indicator scores (0–100) */
+  qs?: QsScores;
+  /** "basic" = generated from QS rankings data only; "full" = researched CareerPath profile */
+  profile?: "full" | "basic";
+  qsUrl?: string;
   tuition: { band: TuitionBand | null; display: string; source: Source };
   aid: { kind: AidForInternational; summary: string; source: Source };
   english: { ielts?: number; toefl?: number; note: string; source: Source };

@@ -8,7 +8,7 @@ import { matchOpportunity } from "@/lib/matching/opportunity";
 import { isProfileReady } from "@/lib/matching/profile";
 import { matchUniversity } from "@/lib/matching/university";
 import type { Career, DegreeLevel, Field, Opportunity, OpportunityType, Region, StudentProfile, University } from "@/lib/types";
-import { monthsAhead } from "@/lib/utils";
+import { monthsAhead, qsLabel } from "@/lib/utils";
 
 /*
  * Data tools shared by the offline advisor and the AI advisor (Claude tool use).
@@ -261,7 +261,7 @@ export function uniBrief(u: University, profile?: StudentProfile | null) {
   const m = ready ? matchUniversity(profile!, u) : null;
   return {
     name: u.name, url: `/universities/${u.slug}`, slug: u.slug, city: u.city, country: u.country, type: u.type,
-    qsRank2027: u.qsRank ?? null, selectivity: u.selectivity, levels: u.levels, fields: u.fields.map((f) => FIELD_LABELS[f]),
+    qsRank2027: u.qsRank ? qsLabel(u) : null, qsScores: u.qs ?? null, profileType: u.profile === "basic" ? "basic (QS data only — confirm details on the official site)" : "researched", selectivity: u.selectivity, levels: u.levels, fields: u.fields.map((f) => FIELD_LABELS[f]),
     notablePrograms: u.notablePrograms, overview: u.overview,
     tuition: { display: u.tuition.display, status: u.tuition.source.status },
     aid: { kind: u.aid.kind, summary: u.aid.summary, status: u.aid.source.status },

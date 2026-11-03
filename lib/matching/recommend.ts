@@ -33,7 +33,8 @@ function whyPrefix(p: StudentProfile) {
 export function rankUniversities(p: StudentProfile) {
   return universities
     .map((u) => ({ item: u, match: matchUniversity(p, u) }))
-    .sort((a, b) => b.match.score - a.match.score);
+    // researched profiles rank ahead of basic QS-only profiles with a similar score
+    .sort((a, b) => b.match.score - (b.item.profile === "basic" ? 6 : 0) - (a.match.score - (a.item.profile === "basic" ? 6 : 0)));
 }
 
 export function rankOpportunities(p: StudentProfile, types?: OpportunityType[]) {

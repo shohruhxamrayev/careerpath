@@ -9,7 +9,7 @@ import { LazyGlobe } from "@/components/three/lazy";
 import { AID_LABELS } from "@/lib/data/taxonomy";
 import type { MatchResult } from "@/lib/matching/types";
 import type { University } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, qsLabel } from "@/lib/utils";
 
 /** Interactive 3D globe of the currently filtered universities, with a synced list and detail card. */
 export function GlobeExplorer({ rows, fromTashkent }: { rows: { u: University; m?: MatchResult }[]; fromTashkent: boolean }) {
@@ -22,7 +22,7 @@ export function GlobeExplorer({ rows, fromTashkent }: { rows: { u: University; m
         .map(({ u, m }) => ({
           id: u.slug,
           label: u.shortName ?? u.name,
-          sub: `${u.city}, ${u.country}${m ? ` · ${m.score}% match` : u.qsRank ? ` · QS #${u.qsRank}` : ""}`,
+          sub: `${u.city}, ${u.country}${m ? ` · ${m.score}% match` : u.qsRank ? ` · QS ${qsLabel(u)}` : ""}`,
           lat: u.geo![0],
           lng: u.geo![1],
           weight: m ? m.score / 100 : u.qsRank ? Math.max(0.35, 1 - u.qsRank / 140) : 0.3,
@@ -44,14 +44,14 @@ export function GlobeExplorer({ rows, fromTashkent }: { rows: { u: University; m
     <div className="night overflow-hidden rounded-2xl border border-white/[0.08] bg-night-900 shadow-pop">
       <div className="grid lg:grid-cols-[320px_1fr]">
         <ul ref={listRef} className="order-2 max-h-[360px] divide-y divide-white/[0.06] overflow-y-auto border-white/[0.08] lg:order-1 lg:max-h-[600px] lg:border-r" aria-label="Universities on the globe">
-          {rows.map(({ u, m }) => (
+          {rows.slice(0, 150).map(({ u, m }) => (
             <li key={u.slug} data-slug={u.slug}>
               <button
                 onClick={() => setFocus(u.slug)}
                 aria-pressed={focus === u.slug}
                 className={cn("flex w-full items-center gap-3 px-4 py-3 text-left transition-colors", focus === u.slug ? "bg-mint/10" : "hover:bg-white/[0.04]")}
               >
-                <span className="w-9 shrink-0 font-mono text-[11px] text-night-400">{u.qsRank ? `#${u.qsRank}` : "—"}</span>
+                <span className="w-9 shrink-0 font-mono text-[11px] text-night-400">{u.qsRank ? qsLabel(u) : "—"}</span>
                 <span className="min-w-0 flex-1">
                   <span className={cn("block truncate text-[13.5px]", focus === u.slug ? "font-medium text-white" : "text-night-100")}>{u.name}</span>
                   <span className="block truncate text-[11.5px] text-night-400">{u.city}, {u.country}</span>
@@ -89,7 +89,7 @@ export function GlobeExplorer({ rows, fromTashkent }: { rows: { u: University; m
               </div>
               <div className="mt-3 flex flex-wrap gap-1.5">
                 {sel.m && <MatchPill score={sel.m.score} eligible={sel.m.eligible} />}
-                {sel.u.qsRank && <span className="rounded border border-white/15 px-1.5 py-0.5 text-[11.5px] text-night-200">QS 2027 #{sel.u.qsRank}</span>}
+                {sel.u.qsRank && <span className="rounded border border-white/15 px-1.5 py-0.5 text-[11.5px] text-night-200">QS 2027 {qsLabel(sel.u)}</span>}
                 <span className="rounded bg-white/[0.06] px-1.5 py-0.5 text-[11.5px] text-night-200">{AID_LABELS[sel.u.aid.kind]}</span>
               </div>
               <p className="mt-3 line-clamp-2 text-[12.5px] text-night-300">{sel.u.tuition.display}</p>

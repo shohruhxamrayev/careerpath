@@ -9,7 +9,7 @@ import { AID_LABELS, FIELD_LABELS, OPPORTUNITY_TYPE_LABELS } from "@/lib/data/ta
 import type { CareerMatch } from "@/lib/matching/career";
 import type { MatchResult } from "@/lib/matching/types";
 import type { Career, Opportunity, University } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, qsLabel } from "@/lib/utils";
 
 const FUNDING_LABEL: Record<Opportunity["funding"]["kind"], string> = {
   "fully-funded": "Fully funded",
@@ -38,7 +38,7 @@ export function UniversityCard({ u, match, why }: { u: University; match?: Match
       </div>
       <div className="mt-3 flex flex-wrap gap-1.5">
         {match && <MatchPill score={match.score} eligible={match.eligible} />}
-        {u.qsRank && <Badge tone="outline" title="QS World University Rankings 2027">QS #{u.qsRank}</Badge>}
+        {u.qsRank && <Badge tone="outline" title="QS World University Rankings 2027">QS {qsLabel(u)}</Badge>}
         <Badge tone={u.aid.kind === "need-based-full" || u.aid.kind === "government" ? "brand" : "neutral"}>{AID_LABELS[u.aid.kind]}</Badge>
       </div>
       <p className="mt-3 line-clamp-2 text-[13px] leading-relaxed text-ink-2">{u.notablePrograms.slice(0, 3).join(" · ")}</p>

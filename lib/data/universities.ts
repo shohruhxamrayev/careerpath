@@ -5,6 +5,7 @@ import { COMMON_APP, OUAC, UCAS, deadline, src } from "./sources";
 import { extraUniversities } from "./universities-extra";
 import { moreUniversities, QS2027_MORE } from "./universities-more";
 import { QS2027_WORLD, worldUniversities } from "./universities-world";
+import { QS_FOR_CURATED, qsBasicUniversities } from "./universities-qs";
 
 /*
  * University seed dataset.
@@ -1094,11 +1095,23 @@ const baseUniversities: University[] = [
  * Final dataset: hand-written records above + the researched expansion, with QS 2027 ranks
  * (verified against the published table) and coordinates for the 3D globe applied on top.
  */
-export const universities: University[] = [...baseUniversities, ...extraUniversities, ...moreUniversities, ...worldUniversities].map((u) => ({
-  ...u,
-  qsRank: QS2027[u.slug] ?? QS2027_MORE[u.slug] ?? QS2027_WORLD[u.slug],
-  geo: u.geo ?? GEO[u.slug],
-}));
+const curated: University[] = [...baseUniversities, ...extraUniversities, ...moreUniversities, ...worldUniversities].map((u) => {
+  const q = QS_FOR_CURATED.get(u.slug);
+  return {
+    ...u,
+    // official QS 2027 data when we matched the university in the full list; earlier research otherwise
+    qsRank: q?.rank ?? QS2027[u.slug] ?? QS2027_MORE[u.slug] ?? QS2027_WORLD[u.slug],
+    qsDisplay: q?.display,
+    qs: q?.qs,
+    qsUrl: q?.qsUrl,
+    profile: "full" as const,
+    geo: u.geo ?? GEO[u.slug],
+  };
+});
+
+/** Researched profiles first, then basic profiles for the rest of the QS 2027 list (1,504 ranked institutions in total). */
+export const universities: University[] = [...curated, ...qsBasicUniversities(new Set(curated.map((u) => u.slug)))];
+export const curatedUniversities = curated;
 
 const bySlug = new Map(universities.map((u) => [u.slug, u]));
 

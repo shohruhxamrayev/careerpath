@@ -2,7 +2,7 @@
 
 import { Globe2, GraduationCap, LayoutGrid, Sparkles } from "lucide-react";
 import Link from "next/link";
-import { useMemo } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { UniversityCard } from "@/components/cards";
 import { GlobeExplorer } from "@/components/directories/GlobeExplorer";
 import { FilterPanel, FilterSelect, SearchInput, useUrlFilters } from "@/components/filters";
@@ -57,6 +57,10 @@ export function UniversityDirectory() {
     });
     return list;
   }, [f, personalised, data]);
+  const [shown, setShown] = useState(48);
+  // reset paging whenever the filters change
+  const filterKey = JSON.stringify(f);
+  useEffect(() => setShown(48), [filterKey]);
 
   return (
     <div className="container py-8">
@@ -81,7 +85,7 @@ export function UniversityDirectory() {
           <FilterSelect id="f-deadline" label="Application deadline" value={f.deadline} onChange={(v) => set("deadline", v)} options={[["", "Any time"], ["2", "Within ~2 months"], ["4", "Within ~4 months"], ["6", "Within ~6 months"]]} />
           <FilterSelect id="f-testing" label="Test requirements" value={f.testing} onChange={(v) => set("testing", v)} options={[["", "Any policy"], ["none", "No SAT/ACT required"]]} />
           <FilterSelect id="f-english" label="English requirement" value={f.english} onChange={(v) => set("english", v)} options={[["", "Any"], ["6", "IELTS 6.0 or lower"], ["6.5", "IELTS 6.5 or lower"], ["7", "IELTS 7.0 or lower"]]} />
-          <FilterSelect id="f-rank" label="Ranking (QS 2027)" value={f.rank} onChange={(v) => set("rank", v)} options={[["", "Any"], ["10", "Top 10"], ["25", "Top 25"], ["50", "Top 50"], ["ranked", "Ranked in our data"]]} />
+          <FilterSelect id="f-rank" label="Ranking (QS 2027)" value={f.rank} onChange={(v) => set("rank", v)} options={[["", "Any"], ["10", "Top 10"], ["50", "Top 50"], ["100", "Top 100"], ["200", "Top 200"], ["500", "Top 500"], ["1000", "Top 1000"], ["ranked", "All QS-ranked"]]} />
         </FilterPanel>
 
         <div className="min-w-0">
@@ -116,9 +120,17 @@ export function UniversityDirectory() {
           ) : f.view === "globe" ? (
             <GlobeExplorer rows={rows} fromTashkent={!personalised || data?.profile.personal.country === "Uzbekistan"} />
           ) : (
-            <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
-              {rows.map(({ u, m }) => <UniversityCard key={u.slug} u={u} match={m} />)}
-            </div>
+            <>
+              <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+                {rows.slice(0, shown).map(({ u, m }) => <UniversityCard key={u.slug} u={u} match={m} />)}
+              </div>
+              {rows.length > shown && (
+                <div className="mt-8 flex flex-col items-center gap-2">
+                  <Button variant="secondary" onClick={() => setShown((n) => n + 48)}>Show more universities</Button>
+                  <p className="text-[12.5px] text-ink-4">Showing {shown} of {rows.length}</p>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

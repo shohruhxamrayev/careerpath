@@ -1,3 +1,4 @@
+import { qsLabel } from "@/lib/utils";
 import { ArrowRight, BadgeCheck, Bot, Briefcase, CalendarCheck, Compass, Globe2, GraduationCap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { CareerConstellation } from "@/components/home/CareerConstellation";
@@ -24,7 +25,7 @@ export default function Home() {
     .map((u) => ({
       id: u.slug,
       label: u.shortName ?? u.name,
-      sub: `${u.city}, ${u.country}${u.qsRank ? ` · QS #${u.qsRank}` : ""}`,
+      sub: `${u.city}, ${u.country}${u.qsRank ? ` · QS ${qsLabel(u)}` : ""}`,
       lat: u.geo![0],
       lng: u.geo![1],
       weight: u.qsRank ? Math.max(0.35, 1 - u.qsRank / 140) : 0.3,

@@ -12,7 +12,7 @@ import { rankCareers, rankOpportunities, rankUniversities } from "@/lib/matching
 import { matchUniversity } from "@/lib/matching/university";
 import { searchAll } from "@/lib/search";
 import type { Application, Career, Opportunity, OpportunityType, StudentProfile, University } from "@/lib/types";
-import { daysUntil, formatDate, monthsAhead } from "@/lib/utils";
+import { daysUntil, formatDate, monthsAhead, qsLabel } from "@/lib/utils";
 
 /*
  * Path Assistant — offline advisor.
@@ -116,7 +116,7 @@ export function advise(question: string, profile: StudentProfile | null, applica
     if (guide.id === "germany" || (guide.id === "uk-visa" && /universit/.test(s))) {
       const c = guide.id === "germany" ? "Germany" : "United Kingdom";
       const rows = searchUniversities({ countries: [c], limit: 5 }, p);
-      if (rows.length) text += `\n\n### ${c} universities in CareerPath\n${rows.map(({ u, m }) => `- ${uLink(u)} — ${u.city}${u.qsRank ? ` · QS #${u.qsRank}` : ""}${m ? ` · **${m.score}% match**` : ""}`).join("\n")}`;
+      if (rows.length) text += `\n\n### ${c} universities in CareerPath\n${rows.map(({ u, m }) => `- ${uLink(u)} — ${u.city}${u.qsRank ? ` · QS ${qsLabel(u)}` : ""}${m ? ` · **${m.score}% match**` : ""}`).join("\n")}`;
     }
     if (guide.id === "english-tests" && e.ielts) {
       const rows = universities.filter((u) => u.english.ielts != null && u.english.ielts <= e.ielts!).sort((a, b) => (a.qsRank ?? 999) - (b.qsRank ?? 999)).slice(0, 8);
@@ -176,7 +176,7 @@ function universityAnswer(u: University, s: string, p: StudentProfile | null, nu
     /aid|scholarship|funding|financial/.test(s) ? "aid" :
     /deadline|when|apply by|due/.test(s) ? "deadlines" : null;
 
-  const lines: string[] = [`### ${u.name}`, `${u.city}, ${u.country} · ${u.type === "public" ? "Public" : "Private"}${u.qsRank ? ` · **QS 2027 #${u.qsRank}**` : ""} · ${SELECTIVITY_LABELS[u.selectivity]}`, ""];
+  const lines: string[] = [`### ${u.name}`, `${u.city}, ${u.country} · ${u.type === "public" ? "Public" : "Private"}${u.qsRank ? ` · **QS 2027 ${qsLabel(u)}**` : ""} · ${SELECTIVITY_LABELS[u.selectivity]}`, ""];
   const eng = `- **English:** ${u.english.ielts ? `IELTS ${u.english.ielts.toFixed(1)}` : "minimum not captured"}${u.english.toefl ? ` / TOEFL ${u.english.toefl}` : ""} — ${u.english.note} _(${statusTag(u.english.source.status)})_`;
   const test = `- **Admission tests:** ${u.testing.note} _(${statusTag(u.testing.source.status)})_`;
   const cost = `- **Tuition:** ${u.tuition.display} _(${statusTag(u.tuition.source.status)})_`;
@@ -241,7 +241,7 @@ function compareUniversities(list: University[], p: StudentProfile | null, nudge
   const head = `| | ${list.map((u) => u.shortName ?? u.name).join(" | ")} |\n| --- | ${list.map(() => "---").join(" | ")} |`;
   const rows: [string, (u: University, i: number) => string][] = [
     ["Location", (u) => `${u.city}, ${u.country}`],
-    ["QS 2027", (u) => (u.qsRank ? `#${u.qsRank}` : "—")],
+    ["QS 2027", (u) => (u.qsRank ? qsLabel(u) : "—")],
     ["Selectivity", (u) => SELECTIVITY_LABELS[u.selectivity]],
     ["Tuition", (u) => u.tuition.display],
     ["Aid", (u) => AID_LABELS[u.aid.kind]],
@@ -335,7 +335,7 @@ function universityList(e: Entities, s: string, p: StudentProfile | null, nudge:
   if (!rows.length) {
     return { text: `I couldn't find universities ${desc || "matching that"} in CareerPath's dataset. Try widening one filter — for example a nearby country or a higher English score.${nudge}`, suggestions: ["Which countries have low tuition?", "What universities should I consider?"] };
   }
-  const lines = rows.map(({ u, m }) => `- **${uLink(u)}** — ${u.city}, ${u.country}${u.qsRank ? ` · QS #${u.qsRank}` : ""} · ${u.tuition.display}${u.english.ielts ? ` · IELTS ${u.english.ielts.toFixed(1)}` : ""}${m ? ` · **${m.score}% match**` : ""}`);
+  const lines = rows.map(({ u, m }) => `- **${uLink(u)}** — ${u.city}, ${u.country}${u.qsRank ? ` · QS ${qsLabel(u)}` : ""} · ${u.tuition.display}${u.english.ielts ? ` · IELTS ${u.english.ielts.toFixed(1)}` : ""}${m ? ` · **${m.score}% match**` : ""}`);
   const country = e.countries[0];
   return {
     text: `### Universities ${desc}\n${p ? "_Sorted by your Profile Match._\n" : "_Sorted by QS 2027 rank._\n"}\n${lines.join("\n")}\n\nSee them all with filters in [Universities](/universities${country ? `?country=${encodeURIComponent(country)}` : ""}).${nudge}`,

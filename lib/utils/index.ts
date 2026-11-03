@@ -71,3 +71,10 @@ export function safeJSON<T>(raw: string | null, fallback: T): T {
     return fallback;
   }
 }
+
+/** Official QS 2027 rank label: "#12", "=131" (joint) or a band like "801–850". */
+export function qsLabel(u: { qsRank?: number; qsDisplay?: string }): string {
+  const d = u.qsDisplay;
+  if (d) return /[-+]/.test(d) ? d.replace("-", "–") : d.startsWith("=") ? d : `#${d}`;
+  return u.qsRank ? `#${u.qsRank}` : "";
+}

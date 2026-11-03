@@ -64,3 +64,8 @@ Note: TOEFL iBT moved to a 1–6 band scale for tests from January 2026; many un
 - UK Graduate visa: 18 months if applying on/after 1 January 2027. https://www.gov.uk/graduate-visa
 - Germany blocked account 2026: €992/month (€11,904/year). Secondary sources (Expatrio, germany-visa.org).
 - US STEM OPT: 24-month extension. https://www.uscis.gov/working-in-the-united-states/students-and-exchange-visitors/optional-practical-training-extension-for-stem-students-stem-opt
+
+## Full QS World University Rankings 2027 (2026-11-03)
+- All 1,504 ranked institutions read from the QS rankings endpoint behind https://www.topuniversities.com/world-university-rankings (nid 4153156): name, city, country, rank label and indicator scores (academic reputation, employer reputation, employment outcomes, faculty–student ratio, international students, citations, sustainability, overall).
+- 205 matched to existing researched profiles (official rank + indicators added); the rest become "basic" profiles. Coordinates are approximate city locations from the open GeoNames-based `all-the-cities` dataset.
+- Basic-profile descriptions are written by CareerPath from the facts above (QS text is not copied). Costs/requirements are country-typical estimates, labelled unverified.

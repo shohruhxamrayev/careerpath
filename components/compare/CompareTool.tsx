@@ -10,7 +10,7 @@ import { isProfileReady } from "@/lib/matching/profile";
 import { matchUniversity } from "@/lib/matching/university";
 import { useApp } from "@/lib/store/AppProvider";
 import type { University } from "@/lib/types";
-import { cn } from "@/lib/utils";
+import { cn, qsLabel } from "@/lib/utils";
 
 const MAX = 4;
 const PRESETS: { label: string; slugs: string[] }[] = [
@@ -53,7 +53,7 @@ export function CompareTool() {
 
   const rows: Row[] = [
     ...(personalised ? [{ label: "Your Profile Match", value: (_u: University, i: number) => <span className="font-mono text-[15px] font-semibold text-brand-700">{matches[i]!.score}%</span>, best: (l: University[]) => bestBy(l, (u) => matches[l.indexOf(u)]?.score ?? null, "max") }] : []),
-    { label: "QS World Ranking 2027", value: (u) => (u.qsRank ? `#${u.qsRank}` : "Not in top 200"), best: (l) => bestBy(l, (u) => u.qsRank ?? null, "min") },
+    { label: "QS World Ranking 2027", value: (u) => (u.qsRank ? qsLabel(u) : "Not ranked"), best: (l) => bestBy(l, (u) => u.qsRank ?? null, "min") },
     { label: "Location", value: (u) => `${u.city}, ${u.country}` },
     { label: "Type", value: (u) => (u.type === "public" ? "Public" : "Private") },
     { label: "Selectivity", value: (u) => SELECTIVITY_LABELS[u.selectivity] },

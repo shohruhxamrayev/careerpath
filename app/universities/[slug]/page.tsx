@@ -1,3 +1,4 @@
+import { qsLabel } from "@/lib/utils";
 import { ArrowLeft, ExternalLink, Globe, MapPin } from "lucide-react";
 import type { Metadata } from "next";
 import Link from "next/link";
@@ -12,10 +13,11 @@ import { getOpportunity, opportunities } from "@/lib/data/opportunities";
 import { QS_SOURCE } from "@/lib/data/sources";
 import { AID_LABELS, DEGREE_LEVEL_LABELS, FIELD_LABELS, SELECTIVITY_LABELS } from "@/lib/data/taxonomy";
 import { getUniversity, universities } from "@/lib/data/universities";
-import type { Opportunity } from "@/lib/types";
+import type { Opportunity, QsScores, University } from "@/lib/types";
 
 export function generateStaticParams() {
-  return universities.map((u) => ({ slug: u.slug }));
+  // researched profiles are pre-built; the 1,300 basic QS profiles render on first visit and are cached
+  return universities.filter((u) => u.profile !== "basic").map((u) => ({ slug: u.slug }));
 }
 
 export function generateMetadata({ params }: { params: { slug: string } }): Metadata {
@@ -56,7 +58,7 @@ export default function UniversityPage({ params }: { params: { slug: string } })
           <div className="mt-5 flex flex-col gap-6 lg:flex-row lg:items-end lg:justify-between">
             <div className="max-w-3xl">
               <div className="flex flex-wrap gap-1.5">
-                {u.qsRank && <Badge tone="outline">QS 2027 #{u.qsRank}</Badge>}
+                {u.qsRank && <Badge tone="outline">QS 2027 {qsLabel(u)}</Badge>}
                 <Badge>{u.type === "public" ? "Public" : "Private"}</Badge>
                 <Badge>{SELECTIVITY_LABELS[u.selectivity]}</Badge>
                 <Badge tone="brand">{AID_LABELS[u.aid.kind]}</Badge>
@@ -64,10 +66,17 @@ export default function UniversityPage({ params }: { params: { slug: string } })
               <h1 className="display mt-3 text-[34px] leading-[1.1] sm:text-[44px]">{u.name}</h1>
               <p className="mt-3 flex flex-wrap items-center gap-x-4 gap-y-1 text-[14px] text-ink-3">
                 <span className="inline-flex items-center gap-1.5"><MapPin className="h-4 w-4" /> {u.city}, {u.country}</span>
-                <a href={u.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-mint">
-                  <Globe className="h-4 w-4" /> {new URL(u.website).hostname.replace(/^www\./, "")}
-                  <span className="sr-only">(opens in a new tab)</span>
-                </a>
+                {u.profile === "basic" ? (
+                  <a href={`https://www.google.com/search?q=${encodeURIComponent(`${u.name} official website admissions`)}`} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-mint">
+                    <Globe className="h-4 w-4" /> Find the official website
+                    <span className="sr-only">(opens in a new tab)</span>
+                  </a>
+                ) : (
+                  <a href={u.website} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1.5 hover:text-mint">
+                    <Globe className="h-4 w-4" /> {new URL(u.website).hostname.replace(/^www\./, "")}
+                    <span className="sr-only">(opens in a new tab)</span>
+                  </a>
+                )}
                 {u.founded && <span>Founded {u.founded}</span>}
               </p>
             </div>
@@ -77,8 +86,8 @@ export default function UniversityPage({ params }: { params: { slug: string } })
               <ButtonLink href={`/compare?u=${u.slug}`} variant="nightOutline">
                 Compare
               </ButtonLink>
-              <ButtonLink href={u.admissionsUrl} external variant="nightOutline">
-                Official admissions <ExternalLink className="h-3.5 w-3.5" />
+              <ButtonLink href={u.profile === "basic" ? u.qsUrl ?? u.admissionsUrl : u.admissionsUrl} external variant="nightOutline">
+                {u.profile === "basic" ? "View on QS" : "Official admissions"} <ExternalLink className="h-3.5 w-3.5" />
               </ButtonLink>
             </div>
           </div>
@@ -89,13 +98,19 @@ export default function UniversityPage({ params }: { params: { slug: string } })
 
       <div className="container grid gap-8 py-8 lg:grid-cols-[1fr_380px]">
         <div className="min-w-0 space-y-6">
+          {u.profile === "basic" && (
+            <p className="rounded-lg border border-warn/30 bg-warn-bg px-4 py-3 text-[13.5px] leading-relaxed text-warn">
+              <strong>Basic profile.</strong> Rank, location and indicator scores come from the QS World University Rankings 2027. Costs and requirements below are typical for {u.country} and are <strong>not checked for this university</strong> — confirm them on its official website before applying.
+            </p>
+          )}
           <Block id="overview" title="Overview">
             <p className="text-[15px] leading-relaxed text-ink-2">{u.overview}</p>
             <dl className="mt-5 grid gap-4 sm:grid-cols-3">
               <Fact label="Degree levels" value={u.levels.map((l) => DEGREE_LEVEL_LABELS[l]).join(", ")} />
               <Fact label="Language of instruction" value={u.languageOfInstruction} />
-              <Fact label="Ranking" value={u.qsRank ? `#${u.qsRank} in QS World University Rankings 2027` : "Not in our ranking data"} />
+              <Fact label="Ranking" value={u.qsRank ? `${qsLabel(u)} in QS World University Rankings 2027` : "Not ranked in QS 2027"} />
             </dl>
+            {u.qs && <QsIndicators qs={u.qs} />}
             {u.qsRank && <SourceNote source={QS_SOURCE} className="mt-4" />}
           </Block>
 
@@ -165,9 +180,15 @@ export default function UniversityPage({ params }: { params: { slug: string } })
               Applications are submitted on official channels only. CareerPath doesn&apos;t process applications or share your data with universities.
             </p>
             <div className="mt-4 flex flex-wrap gap-2">
-              <ButtonLink href={u.admissionsUrl} external>
-                Go to official admissions <ExternalLink className="h-3.5 w-3.5" />
-              </ButtonLink>
+              {u.profile === "basic" ? (
+                <ButtonLink href={`https://www.google.com/search?q=${encodeURIComponent(`${u.name} admissions international students`)}`} external>
+                  Find official admissions <ExternalLink className="h-3.5 w-3.5" />
+                </ButtonLink>
+              ) : (
+                <ButtonLink href={u.admissionsUrl} external>
+                  Go to official admissions <ExternalLink className="h-3.5 w-3.5" />
+                </ButtonLink>
+              )}
               {u.applicationPlatform && (
                 <ButtonLink href={u.applicationPlatform.url} external variant="secondary">
                   {u.applicationPlatform.name} <ExternalLink className="h-3.5 w-3.5" />
@@ -214,6 +235,39 @@ function Req({ label, value, note, source }: { label: string; value: string; not
       </div>
       {note && <p className="mt-1.5 text-[13px] text-ink-3">{note}</p>}
       <SourceNote source={source} className="mt-2.5" />
+    </div>
+  );
+}
+
+
+const QS_ROWS: [Exclude<keyof QsScores, "overall">, string][] = [
+  ["academicReputation", "Academic reputation"],
+  ["employerReputation", "Employer reputation"],
+  ["employmentOutcomes", "Employment outcomes"],
+  ["facultyStudent", "Faculty–student ratio"],
+  ["internationalStudents", "International students"],
+  ["citations", "Citations per faculty"],
+  ["sustainability", "Sustainability"],
+];
+
+function QsIndicators({ qs }: { qs: QsScores }) {
+  const rows = QS_ROWS.filter(([k]) => qs[k] != null);
+  if (!rows.length) return null;
+  return (
+    <div className="mt-6 rounded-lg border border-line bg-paper p-4">
+      <div className="mb-3 flex items-baseline justify-between gap-3">
+        <h3 className="text-[13.5px] font-semibold text-ink">QS 2027 indicator scores</h3>
+        {qs.overall != null && <span className="font-mono text-[12px] text-ink-3">Overall {qs.overall}/100</span>}
+      </div>
+      <ul className="grid gap-x-6 gap-y-2.5 sm:grid-cols-2">
+        {rows.map(([k, label]) => (
+          <li key={k}>
+            <div className="flex justify-between text-[12.5px]"><span className="text-ink-3">{label}</span><span className="font-mono text-ink-2">{qs[k]}</span></div>
+            <div className="mt-1 h-1.5 overflow-hidden rounded-full bg-line"><div className="h-full rounded-full bg-brand-600" style={{ width: `${Math.min(100, qs[k] ?? 0)}%` }} /></div>
+          </li>
+        ))}
+      </ul>
+      <p className="mt-3 text-[11.5px] text-ink-4">Scores out of 100, published by QS. Higher is better.</p>
     </div>
   );
 }

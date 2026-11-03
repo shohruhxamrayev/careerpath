@@ -71,7 +71,7 @@ supabase/schema.sql  database schema with Row Level Security
 
 ## Dataset
 
-219 universities in 41 countries (QS World University Rankings 2027 positions where published), 166 opportunities across 10 types (including 21 jobs and graduate programmes), 26 careers and 27 certifications/courses. Research log: `lib/data/research/NOTES.md`.
+1,517 universities in 105 countries: the full QS World University Rankings 2027 list (1,504 institutions, with official rank labels and indicator scores) plus researched profiles. 219 have researched CareerPath profiles; the rest are clearly labelled basic profiles, 166 opportunities across 10 types (including 21 jobs and graduate programmes), 26 careers and 27 certifications/courses. Research log: `lib/data/research/NOTES.md`.
 
 ## Matching
 

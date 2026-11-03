@@ -101,10 +101,13 @@ export function buildRoadmap(input: RoadmapInput, profile: StudentProfile | null
   // ── universities ──
   const uniPool = universities.filter((u) => u.levels.includes(input.level) && (!input.countries.length || input.countries.includes(u.country)) && (!input.fields.length || input.fields.some((f) => u.fields.includes(f))));
   const scoredUnis = uniPool
-    .map((u) => ({ u, score: ready ? matchUniversity(profile!, u).score : 100 - (u.qsRank ?? 150) / 3 }))
+    .map((u) => {
+      const shown = ready ? matchUniversity(profile!, u).score : 100 - (u.qsRank ?? 150) / 3;
+      return { u, shown, score: shown - (u.profile === "basic" ? 6 : 0) };
+    })
     .sort((a, b) => b.score - a.score)
     .slice(0, 6);
-  for (const { u, score } of scoredUnis) {
+  for (const { u, shown: score } of scoredUnis) {
     const UG_ONLY = /ucas|early|regular|decision|bachelor|undergrad|\buc\b|peak|national admission/i;
     let dl = input.level === "undergraduate"
       ? u.deadlines.find((d) => !/early|master/i.test(d.label)) ?? u.deadlines[0]

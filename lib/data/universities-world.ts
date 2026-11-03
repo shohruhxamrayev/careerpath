@@ -8,7 +8,7 @@ import { U, au, uk, us } from "./universities-extra";
  * are typical patterns for each system and labelled for students to confirm.
  */
 
-type Preset = {
+export type Preset = {
   tuition: [TuitionBand | null, string];
   aid: ["need-based-full" | "need-based-limited" | "merit" | "government" | "limited", string];
   eng?: { ielts?: number; note: string };
@@ -20,7 +20,7 @@ type Preset = {
 };
 
 const D = (label: string, timing: string, months: number[]) => (adm: string) => [deadline(label, timing, months, src("Official admissions", adm, "unverified"))];
-const P: Record<string, Preset> = {
+export const P: Record<string, Preset> = {
   AU: { tuition: ["30-50k", "Est. AUD 38,000–50,000 per year for international students"], aid: ["merit", "Partial merit scholarships for international students."], eng: { ielts: 6.5, note: "Most programmes ask for IELTS 6.5 with 6.0 in each band." }, test: ["not-used", "SAT/ACT generally not required."], dl: au },
   NZ: { tuition: ["30-50k", "Est. NZD 35,000–45,000 per year for international students"], aid: ["merit", "International merit scholarships available."], eng: { ielts: 6, note: "Commonly IELTS 6.0–6.5 depending on programme." }, test: ["not-used", "Not used."], dl: D("Main intakes", "February and July intakes; apply months ahead", [9, 10, 11, 4, 5]) },
   USPUB: { tuition: ["30-50k", "Est. $40,000–$50,000 per year for non-residents"], aid: ["merit", "Limited aid for international undergraduates."], eng: { ielts: 6.5, note: "English proficiency required — check published minimums." }, dl: (a) => us(a, "Early Action"), platform: COMMON_APP },
