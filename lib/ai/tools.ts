@@ -112,14 +112,18 @@ export function parseEntities(q: string): Entities {
     const full = o.title.toLowerCase();
     const short = full.split(/[—(:]/)[0].trim();
     const first = full.split(/[^a-zà-ÿ-]+/)[0];
-    const cands = [full, short, ...o.tags.filter((t) => t.length > 3 && /[A-Z]/.test(t) && !COUNTRY_WORDS.has(t.toLowerCase())).map((t) => t.toLowerCase())];
+    const em = o.slug.startsWith("em-");
+    // Erasmus Mundus programmes: match only the full title or the programme acronym (e.g. "EMAI")
+    const cands = em
+      ? [full, short, ...o.tags.slice(-1).filter((t) => t.length >= 4 && /^[A-Z0-9+\- ]+$/.test(t)).map((t) => t.toLowerCase())]
+      : [full, short, ...o.tags.filter((t) => t.length > 3 && /[A-Z]/.test(t) && !COUNTRY_WORDS.has(t.toLowerCase())).map((t) => t.toLowerCase())];
     let at = -1;
     for (const c of cands) {
       const m = c.length > 3 ? s.match(new RegExp(`(^|[^a-z])${esc(c)}([^a-z]|$)`)) : null;
       if (m?.index !== undefined) { at = m.index; break; }
     }
     let strong = at >= 0;
-    if (at < 0 && first.length >= 6 && !GENERIC.has(first) && !COUNTRY_WORDS.has(first)) {
+    if (at < 0 && !em && first.length >= 6 && !GENERIC.has(first) && !COUNTRY_WORDS.has(first)) {
       const m = s.match(new RegExp(`\\b${esc(first)}\\b`));
       if (m?.index !== undefined) at = m.index;
       strong = false;

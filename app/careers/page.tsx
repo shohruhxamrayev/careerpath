@@ -15,7 +15,7 @@ export default function CareersPage() {
         title="Explore where your studies"
         accent="can lead."
         description={`${careers.length} career paths with the skills, education routes, entry roles and student opportunities that lead into each one. Hover the constellation to see how careers share skills.`}
-        actions={<ButtonLink href="/certifications" variant="nightOutline">Browse certifications</ButtonLink>}
+        actions={<ButtonLink href="/occupations" variant="nightOutline">Explore all 1,016 occupations</ButtonLink>}
         visual={<div className="relative h-[340px] sm:h-[420px]"><CareerConstellation className="h-full w-full" /></div>}
       />
       <Suspense fallback={<div className="container py-8"><CardSkeletonGrid /></div>}>

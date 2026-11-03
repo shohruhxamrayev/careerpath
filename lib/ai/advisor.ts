@@ -2,6 +2,7 @@ import { findGuide } from "@/lib/ai/knowledge";
 import { careerBrief, datasetStats, parseEntities, searchCareers, searchOpportunities, searchUniversities, type Entities } from "@/lib/ai/tools";
 import { careers } from "@/lib/data/careers";
 import { certifications } from "@/lib/data/certifications";
+import { JOB_ZONES, jobFromQuestion, money, onetUrl, searchOccupations } from "@/lib/data/occupations";
 import { opportunities } from "@/lib/data/opportunities";
 import { AID_LABELS, FIELD_LABELS, MONTHS, OPPORTUNITY_TYPE_PLURAL, SELECTIVITY_LABELS } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
@@ -105,6 +106,29 @@ export function advise(question: string, profile: StudentProfile | null, applica
     return {
       text: `### Certifications${career ? ` for ${career.title}` : " worth considering"}\n${list.map((c) => `- **${c.name}** (${c.provider}) — ${c.level}, ${c.duration}. **Cost:** ${c.cost.display}${c.cost.status === "verified" ? " ✓" : ""}. ${c.why}`).join("\n")}\n\nEmployers value a certificate most when it's paired with a project that uses the skill. Browse all of them with filters on [Certifications](/certifications${career ? `?career=${career.slug}` : ""}), or search 25,000+ online courses in [Courses](/courses${career ? `?q=${encodeURIComponent(career.title)}` : ""}).`,
       suggestions: ["Free certifications for data analysis", "What skills should I build?", "What career fits my interests?"],
+    };
+  }
+
+  // ── any occupation in O*NET (pay, tasks, education) ──
+  const job = !e.careers.length && !e.universities.length && !e.opportunities.length ? jobFromQuestion(s) : null;
+  const occ = job ? searchOccupations(job, { limit: 1 })[0] ?? searchOccupations(job.replace(/s$/, ""), { limit: 1 })[0] : undefined;
+  if (occ) {
+    const b = occ.bls;
+    const facts = [
+      b?.wage ? `**US median pay:** ${money(b.wage)} a year (2025)` : null,
+      b?.growth != null ? `**Job growth 2025–35:** ${b.growth > 0 ? "+" : ""}${b.growth}% (US)` : null,
+      b?.edu || occ.education[0] ? `**Typical entry education:** ${b?.edu ?? occ.education[0][0]}` : null,
+      occ.zone ? `**Preparation:** ${occ.zone}/5 — ${JOB_ZONES[occ.zone].label.toLowerCase()}` : null,
+    ].filter(Boolean);
+    return {
+      text: `### ${occ.title}
+${occ.description}
+
+${facts.map((f) => `- ${f}`).join("\n")}
+
+${occ.tasks.length ? `**What they do:**\n${occ.tasks.slice(0, 5).map((t) => `- ${t}`).join("\n")}\n\n` : ""}${occ.skills.length ? `**Top skills:** ${occ.skills.slice(0, 5).map((x) => x[0]).join(", ")}.\n\n` : ""}Full profile — tasks, skills, education and related careers: [${occ.title}](/occupations/${occ.slug}). Pay figures are for the United States and differ by country.${nudge}`,
+      suggestions: [`Online courses for ${occ.title.toLowerCase()}`, "What career fits my interests?", "What should I study for this?"],
+      sources: [{ label: `O*NET ${occ.code}`, url: onetUrl(occ.code) }, ...(b?.ooh ? [{ label: "BLS Occupational Outlook Handbook", url: b.ooh }] : [])],
     };
   }
 

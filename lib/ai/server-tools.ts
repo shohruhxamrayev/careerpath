@@ -11,6 +11,9 @@ import type { DegreeLevel, Field, OpportunityType, StudentProfile } from "@/lib/
 import { monthsAhead } from "@/lib/utils";
 import { filterLiveJobs, getLiveJobs } from "@/lib/live/jobs";
 import { getCourses, searchCourses } from "@/lib/live/courses";
+import { getOccupationByCode, jobFromQuestion, JOB_ZONES, onetUrl, searchOccupations, type Occupation } from "@/lib/data/occupations";
+
+const occBrief = (o: Occupation) => ({ title: o.title, code: o.code, family: o.family, url: `/occupations/${o.slug}`, usMedianPay: o.bls?.wage ?? null, growth2025to35Pct: o.bls?.growth ?? null, usOpeningsPerYear: o.bls?.openings != null ? Math.round(o.bls.openings * 1000) : null, typicalEntryEducation: o.bls?.edu ?? o.education[0]?.[0] ?? null, preparation: o.zone ? `${o.zone}/5 ${JOB_ZONES[o.zone].label}` : null });
 
 /* Tool definitions + executors for the AI advisor (Claude tool use). Server-only. */
 
@@ -94,6 +97,16 @@ export const AI_TOOLS = [
     input_schema: { type: "object", properties: { months: { type: "number" } } },
   },
   {
+    name: "search_occupations",
+    description: "Search ALL 1,016 occupations (O*NET 31.0 + BLS 2025–35 projections) by job name or alternative title, e.g. 'nurse', 'pilot', 'chef', 'actuary'. Returns US median pay, growth, typical education and the CareerPath page URL. Use for any question about a specific job or profession, especially ones not in the curated careers.",
+    input_schema: { type: "object", properties: { query: { type: "string" }, limit: { type: "number" } }, required: ["query"] },
+  },
+  {
+    name: "get_occupation",
+    description: "Full profile of one occupation: description, day-to-day tasks, top skills and knowledge, education levels, preparation level, RIASEC interests, other job titles, related occupations, US pay, growth and openings.",
+    input_schema: { type: "object", properties: { name: { type: "string", description: "Occupation title, alternative title or O*NET code" } }, required: ["name"] },
+  },
+  {
     name: "search_courses",
     description: "Search Coursera's full catalogue (25,000+ courses from universities and companies) by keywords, subject and language. Use when the student asks for courses or how to learn a skill online. Return course names with their coursera.org links; the finder is at /courses.",
     input_schema: {
@@ -124,6 +137,8 @@ export const AI_TOOLS = [
 
 export const TOOL_LABELS: Record<string, string> = {
   search_live_jobs: "Checking live job boards",
+  search_occupations: "Searching 1,016 occupations",
+  get_occupation: "Reading occupation profile",
   search_courses: "Searching 25,000+ courses",
   search_universities: "Searching universities",
   get_university: "Reading university profile",
@@ -152,6 +167,14 @@ export function runTool(name: string, input: any, profile: StudentProfile | null
   const p = profile && isProfileReady(profile) ? profile : null;
   const limit = Math.min(Number(input?.limit) || 8, 15);
   switch (name) {
+    case "search_occupations":
+      return { explorer: "/occupations", source: "O*NET 31.0 (US DOL, CC BY 4.0) + BLS Employment Projections 2025–35 (US figures)", results: searchOccupations(String(input?.query ?? ""), { limit }).map(occBrief) };
+    case "get_occupation": {
+      const n = String(input?.name ?? "");
+      const o = getOccupationByCode(n) ?? searchOccupations(n, { limit: 1 })[0];
+      if (!o) return { error: "No matching occupation" };
+      return { ...occBrief(o), description: o.description, tasks: o.tasks.slice(0, 8), skills: o.skills.map((x) => x[0]), knowledge: o.knowledge.map((x) => x[0]), educationOfWorkers: o.education.map(([l, p]) => `${l} ${p}%`), interests: o.interests, otherTitles: o.altTitles, related: o.related.map(getOccupationByCode).filter(Boolean).map((r) => ({ title: r!.title, url: `/occupations/${r!.slug}` })), sources: { onet: onetUrl(o.code), ooh: o.bls?.ooh ?? null } };
+    }
     case "search_courses":
       return getCourses().then((all) => {
         const r = searchCourses(all, { q: input?.query, domain: input?.domain, lang: input?.language, limit });
@@ -250,6 +273,8 @@ export function prefetchContext(question: string, profile: StudentProfile | null
   }
   if (p && /\b(i|me|my|mine)\b/.test(s)) pack.myRecommendations = runTool("get_my_recommendations", {}, profile, planner);
   if (/certif|course|credential|upskill|micro-?credential|learn online/.test(s)) pack.certifications = runTool("search_certifications", { career: e.careers[0]?.slug }, profile, planner);
+  const job = jobFromQuestion(s);
+  if (job) pack.occupations = runTool("search_occupations", { query: job, limit: 3 }, profile, planner);
   if (/deadline|due|upcoming|this month|next month|closing/.test(s)) pack.deadlines = runTool("upcoming_deadlines", { months: 3 }, profile, planner);
   return pack;
 }

@@ -13,6 +13,7 @@ import { getOpportunity } from "@/lib/data/opportunities";
 import { getSkill } from "@/lib/data/skills";
 import { FIELD_LABELS } from "@/lib/data/taxonomy";
 import { universities } from "@/lib/data/universities";
+import { money, occupationsForCareer } from "@/lib/data/occupations";
 import type { Opportunity, Skill } from "@/lib/types";
 
 export function generateStaticParams() {
@@ -47,6 +48,7 @@ export default function CareerPage({ params }: { params: { slug: string } }) {
     .filter((u) => u.fields.includes(c.relatedFields[0]))
     .sort((a, b) => (a.qsRank ?? 999) - (b.qsRank ?? 999))
     .slice(0, 3);
+  const occs = occupationsForCareer(c.slug);
 
   return (
     <>
@@ -70,6 +72,22 @@ export default function CareerPage({ params }: { params: { slug: string } }) {
               {c.dayToDay.map((d) => <li key={d} className="flex gap-2.5 text-[14px] text-ink-2"><span className="mt-2 h-1 w-1 shrink-0 rounded-full bg-brand-500" />{d}</li>)}
             </ul>
             <p className="mt-5 rounded bg-paper px-3.5 py-3 text-[13.5px] text-ink-2"><span className="font-medium">Outlook:</span> {c.outlook}</p>
+            {occs.length > 0 && (
+              <div className="mt-5">
+                <h3 className="mb-2 text-[14px] font-semibold">Official occupation data</h3>
+                <ul className="grid grid-cols-1 gap-2 sm:grid-cols-2 [&>*]:min-w-0">
+                  {occs.map((o) => (
+                    <li key={o.code}>
+                      <Link href={`/occupations/${o.slug}`} className="flex items-center justify-between gap-3 rounded border border-line px-3.5 py-2.5 text-[13.5px] hover:border-brand-300 hover:bg-brand-50">
+                        <span className="min-w-0 truncate">{o.title}</span>
+                        {o.bls?.wage != null && <span className="shrink-0 font-mono text-[11.5px] text-ink-4">{money(o.bls.wage)}</span>}
+                      </Link>
+                    </li>
+                  ))}
+                </ul>
+                <p className="mt-2 text-[12px] text-ink-4">Tasks, skills, US pay and job growth from O*NET and the U.S. Bureau of Labor Statistics.</p>
+              </div>
+            )}
           </Block>
 
           <Block id="skills" title="Key skills">

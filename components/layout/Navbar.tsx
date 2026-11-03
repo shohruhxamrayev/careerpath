@@ -24,6 +24,7 @@ export const NAV = [
 ];
 
 function isActive(path: string, href: string) {
+  if (href === "/careers" && path.startsWith("/occupations")) return true;
   return href === "/" ? path === "/" : path === href || path.startsWith(href + "/");
 }
 
@@ -187,7 +188,7 @@ export function Navbar() {
             </div>
             <nav aria-label="Mobile" className="flex-1 overflow-y-auto p-3">
               <ul className="space-y-0.5">
-                {[...NAV, { href: "/courses", label: "Online courses" }, { href: "/certifications", label: "Certifications" }, { href: "/compare", label: "Compare universities" }, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
+                {[...NAV, { href: "/occupations", label: "All occupations" }, { href: "/courses", label: "Online courses" }, { href: "/certifications", label: "Certifications" }, { href: "/compare", label: "Compare universities" }, { href: "/search", label: "Search" }, { href: "/assistant", label: "Path Assistant" }, { href: "/profile", label: "Profile" }].map((n) => (
                   <li key={n.href}>
                     <Link
                       href={n.href}
